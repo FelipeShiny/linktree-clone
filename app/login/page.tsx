@@ -21,8 +21,6 @@ const Login = () => {
                 console.log("userId: ", userId);
                 router.push("/");
             }
-
-            console.log("data: ", data);
         } catch (error) {
             console.log("error", error);
         }
@@ -65,7 +63,7 @@ const Login = () => {
             </div>
             <button
                 type="button"
-                className="inline-flex items-center rounded-md border border-transparent"
+                className="inline-flex items-center rounded-md border border-transparent text-white"
                 onClick={signInWithEmail}
             >
                 Login

@@ -65,6 +65,11 @@ const Home = () => {
                     .select();
                 if (error) throw error;
                 console.log("data: ", data);
+                if (links) {
+                    setLinks([...data, ...links]);
+                }
+                setTitle("");
+                setUrl("");
             }
         } catch (error) {
             console.log("error: ", error);
@@ -87,6 +92,7 @@ const Home = () => {
                             type="text"
                             name="title"
                             id="title"
+                            value={title || ""}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
                             placeholder="me when I link"
                             onChange={(e) => setTitle(e.target.value)}
@@ -98,6 +104,7 @@ const Home = () => {
                             type="text"
                             name="url"
                             id="url"
+                            value={url || ""}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
                             placeholder="my reaction to that url"
                             onChange={(e) => setUrl(e.target.value)}
@@ -105,7 +112,7 @@ const Home = () => {
                     </div>
                     <button
                         type="button"
-                        className="inline-flex items-center rounded-md border border-transparent bg-indigo-600"
+                        className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 text-white cursor"
                         onClick={addNewLink}
                     >
                         Add new link
