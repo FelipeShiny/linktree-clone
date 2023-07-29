@@ -21,7 +21,11 @@ const Login = () => {
                 console.log("userId: ", userId);
                 router.push("/");
             }
-        } catch {}
+
+            console.log("data: ", data);
+        } catch (error) {
+            console.log("error", error);
+        }
     }
 
     return (
