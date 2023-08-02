@@ -6,6 +6,7 @@ import supabase from "../utils/supabaseClient";
 const SignUp = () => {
     const [email, setEmail] = useState<string | undefined>();
     const [password, setPassword] = useState<string | undefined>();
+    const [username, setUsername] = useState<string | undefined>();
 
     async function signUpWithEmail() {
         try {
@@ -28,7 +29,7 @@ const SignUp = () => {
         try {
             const { error } = await supabase
                 .from("users")
-                .insert({ id: userId });
+                .insert({ id: userId, username: username });
             if (error) throw error;
         } catch (error) {
             console.log("error: ", error);
@@ -51,6 +52,22 @@ const SignUp = () => {
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
                     placeholder="you@example.com"
                     onChange={(e) => setEmail(e.target.value)}
+                />
+            </div>
+            <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700"
+            >
+                Username
+            </label>
+            <div className="mt-1">
+                <input
+                    type="username"
+                    name="username"
+                    id="username"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                    placeholder="username"
+                    onChange={(e) => setUsername(e.target.value)}
                 />
             </div>
             <label
