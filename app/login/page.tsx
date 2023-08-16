@@ -63,7 +63,7 @@ const Login = () => {
             </div>
             <button
                 type="button"
-                className="inline-flex items-center rounded-md border border-transparent text-white"
+                className="inline-flex items-center rounded-md border border-transparent bg-black text-white"
                 onClick={signInWithEmail}
             >
                 Login
