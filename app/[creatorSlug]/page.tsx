@@ -47,7 +47,7 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
                 title: editLink?.title,
                 url: editLink?.url,
             })
-            .eq("user_id", userId);
+            .eq("id", editLink?.id);
 
         if (error) {
             console.log("what the flip", error);
