@@ -14,6 +14,7 @@ type Link = {
 const Home = ({ params }: { params: { creatorSlug: string } }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [userId, setUserId] = useState<string | undefined>();
+    const [authEmail, setAuthEmail] = useState<string | undefined>();
 
     const [title, setTitle] = useState<string | undefined>();
     const [url, setUrl] = useState<string | undefined>();
@@ -31,11 +32,13 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
     useEffect(() => {
         const getUser = async () => {
             const user = await supabase.auth.getUser();
+            console.log(user.data.user?.email);
 
             if (user) {
                 const userId = user.data.user?.id;
                 setIsAuthenticated(true);
                 setUserId(userId);
+                setAuthEmail(user.data.user?.email);
             }
         };
 
@@ -160,17 +163,18 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
 
     return (
         <div>
-            {profilePicture && (
-                <Image
-                    src={profilePicture}
-                    alt="profile_picture"
-                    width={100}
-                    height={100}
-                    className="rounded-full"
-                />
-            )}
             {userId ? (
                 <>
+                    <h1>Logged in as {authEmail}</h1>
+                    {profilePicture && (
+                        <Image
+                            src={profilePicture}
+                            alt="profile_picture"
+                            width={100}
+                            height={100}
+                            className="rounded-full"
+                        />
+                    )}
                     {links?.map((link: Link, index: number) => (
                         <div key={index}>
                             <h1>{link.title}</h1>
