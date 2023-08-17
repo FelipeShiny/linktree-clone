@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import ImageUploading, { ImageListType } from "react-images-uploading";
 import supabase from "../utils/supabaseClient";
 import Image from "next/image";
+
+import { Dialog, Transition } from "@headlessui/react";
 
 type Link = {
     id: string;
@@ -15,6 +17,8 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [userId, setUserId] = useState<string | undefined>();
     const [authEmail, setAuthEmail] = useState<string | undefined>();
+    let [isOpen, setIsOpen] = useState(false);
+    const [editLink, setEditLink] = useState<Link>();
 
     const [title, setTitle] = useState<string | undefined>();
     const [url, setUrl] = useState<string | undefined>();
@@ -24,6 +28,134 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
     const [profilePicture, setProfilePicture] = useState<string | undefined>();
 
     const { creatorSlug } = params;
+
+    function displayLink(link: Link) {
+        setIsOpen(true);
+        setEditLink({ id: link.id, title: link.title, url: link.url });
+    }
+
+    async function updateLink() {
+        console.log(editLink);
+        const { data, error } = await supabase
+            .from("links")
+            .update({
+                id: editLink?.id,
+                title: editLink?.title,
+                url: editLink?.url,
+            })
+            .eq("user_id", userId);
+
+        if (error) {
+            console.log("what the flip", error);
+        }
+
+        if (data) {
+            console.log("XD", data);
+        }
+
+        getLinks();
+    }
+
+    function MyDialog() {
+        function closeModal() {
+            setIsOpen(false);
+        }
+
+        return (
+            <>
+                <Transition appear show={isOpen} as={Fragment}>
+                    <Dialog
+                        as="div"
+                        className="relative z-10"
+                        onClose={closeModal}
+                    >
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <div className="fixed inset-0 bg-black bg-opacity-25" />
+                        </Transition.Child>
+
+                        <div className="fixed inset-0 overflow-y-auto">
+                            <div className="flex min-h-full items-center justify-center p-4 text-center">
+                                <Transition.Child
+                                    as={Fragment}
+                                    enter="ease-out duration-300"
+                                    enterFrom="opacity-0 scale-95"
+                                    enterTo="opacity-100 scale-100"
+                                    leave="ease-in duration-200"
+                                    leaveFrom="opacity-100 scale-100"
+                                    leaveTo="opacity-0 scale-95"
+                                >
+                                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                        <Dialog.Title
+                                            as="h3"
+                                            className="text-lg font-medium leading-6 text-gray-900"
+                                        >
+                                            Edit Link
+                                        </Dialog.Title>
+                                        <div className="mt-2">
+                                            <input
+                                                type="text"
+                                                name="title"
+                                                onChange={(e) => {
+                                                    const updatedLink = {
+                                                        ...editLink,
+                                                        title: e.target.value,
+                                                    };
+                                                    setEditLink(updatedLink);
+                                                }}
+                                                value={editLink?.title}
+                                            />
+                                            <input
+                                                type="text"
+                                                name="url"
+                                                onChange={(e) => {
+                                                    const updatedLink = {
+                                                        ...editLink,
+                                                        url: e.target.value,
+                                                    };
+                                                    setEditLink(updatedLink);
+                                                }}
+                                                value={editLink?.url}
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-row gap-4 mt-4">
+                                            <button
+                                                type="button"
+                                                className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                                onClick={() => {
+                                                    updateLink();
+                                                    setIsOpen(false);
+                                                }}
+                                            >
+                                                Update
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                                onClick={() => {
+                                                    setIsOpen(false);
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </Dialog.Panel>
+                                </Transition.Child>
+                            </div>
+                        </div>
+                    </Dialog>
+                </Transition>
+            </>
+        );
+    }
 
     const onChange = (imageList: ImageListType) => {
         setImages(imageList as never[]);
@@ -163,6 +295,7 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
 
     return (
         <div>
+            <MyDialog />
             {userId ? (
                 <>
                     <h1>Logged in as {authEmail}</h1>
@@ -179,19 +312,27 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
                         <div key={index}>
                             <h1>{link.title}</h1>
                             <h1>{link.url}</h1>
-                            <button
-                                className="py-1 px-2 bg-black text-white rounded-lg"
-                                onClick={() => {
-                                    const confirmDelete = window.confirm(
-                                        "Are you sure you want to delete this?"
-                                    );
-                                    if (confirmDelete) {
-                                        deleteLink(link.id);
-                                    }
-                                }}
-                            >
-                                Delete
-                            </button>
+                            <div className="flex flex-row gap-1">
+                                <button
+                                    className="py-1 px-2 bg-black text-white rounded-lg"
+                                    onClick={() => {
+                                        const confirmDelete = window.confirm(
+                                            "Are you sure you want to delete this?"
+                                        );
+                                        if (confirmDelete) {
+                                            deleteLink(link.id);
+                                        }
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    className="py-1 px-2 bg-black text-white rounded-lg"
+                                    onClick={() => displayLink(link)}
+                                >
+                                    Edit
+                                </button>
+                            </div>
                         </div>
                     ))}
                     {isAuthenticated && (
