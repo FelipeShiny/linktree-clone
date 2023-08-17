@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Dialog, Transition } from "@headlessui/react";
 
 type Link = {
-    id: string;
+    id: number;
     title: string;
     url: string;
 };
@@ -18,7 +18,11 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
     const [userId, setUserId] = useState<string | undefined>();
     const [authEmail, setAuthEmail] = useState<string | undefined>();
     let [isOpen, setIsOpen] = useState(false);
-    const [editLink, setEditLink] = useState<Link>();
+    const [editLink, setEditLink] = useState<Link>({
+        id: 0,
+        title: "",
+        url: "",
+    });
 
     const [title, setTitle] = useState<string | undefined>();
     const [url, setUrl] = useState<string | undefined>();
@@ -35,11 +39,11 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
     }
 
     async function updateLink() {
-        console.log(editLink);
+        console.log("link", editLink);
+        console.log("userId", userId);
         const { data, error } = await supabase
             .from("links")
             .update({
-                id: editLink?.id,
                 title: editLink?.title,
                 url: editLink?.url,
             })
@@ -104,11 +108,15 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
                                                 type="text"
                                                 name="title"
                                                 onChange={(e) => {
-                                                    const updatedLink = {
+                                                    const updatedLink: Link = {
                                                         ...editLink,
                                                         title: e.target.value,
                                                     };
-                                                    setEditLink(updatedLink);
+                                                    if (updatedLink) {
+                                                        setEditLink(
+                                                            updatedLink
+                                                        );
+                                                    }
                                                 }}
                                                 value={editLink?.title}
                                             />
@@ -116,11 +124,15 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
                                                 type="text"
                                                 name="url"
                                                 onChange={(e) => {
-                                                    const updatedLink = {
+                                                    const updatedLink: Link = {
                                                         ...editLink,
                                                         url: e.target.value,
                                                     };
-                                                    setEditLink(updatedLink);
+                                                    if (updatedLink) {
+                                                        setEditLink(
+                                                            updatedLink
+                                                        );
+                                                    }
                                                 }}
                                                 value={editLink?.url}
                                             />
@@ -249,7 +261,7 @@ const Home = ({ params }: { params: { creatorSlug: string } }) => {
     // Update
 
     // Delete
-    const deleteLink = async (linkId: string) => {
+    const deleteLink = async (linkId: number) => {
         try {
             const { error } = await supabase
                 .from("links")
