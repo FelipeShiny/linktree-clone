@@ -51,6 +51,34 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
 
     // CRUD
 
+    // Create
+    const [newTitle, setNewTitle] = useState<string | undefined>();
+    const [newUrl, setNewUrl] = useState<string | undefined>();
+
+    const addNewLink = async () => {
+        try {
+            if (newTitle && newUrl && authUserId) {
+                const { data, error } = await supabase
+                    .from("links")
+                    .insert({
+                        title: newTitle,
+                        url: newUrl,
+                        user_id: authUserId,
+                    })
+                    .select();
+                if (error) throw error;
+                console.log("New link successfully created: ", data);
+                if (creatorLinks) {
+                    setCreatorLinks([...data, ...creatorLinks]);
+                }
+                setNewTitle("");
+                setNewUrl("");
+            }
+        } catch (error) {
+            console.log("Error in creating new link: ", error);
+        }
+    };
+
     // Read
     const { creatorSlug } = params;
     const [profilePicture, setProfilePicture] = useState<string | undefined>();
@@ -107,13 +135,16 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
             const { error } = await supabase
                 .from("links")
                 .delete()
-                .eq("id", linkId);
-
+                .eq("id", linkId)
+                .select();
             if (error) throw error;
 
-            // Optionally, you can update the state to reflect the new list of links after deletion.
-            // For simplicity, we will re-fetch all links after deletion.
-            fetchLinks();
+            if (creatorLinks) {
+                const updatedLinks = creatorLinks.filter(
+                    (link) => link.id !== linkId
+                );
+                setCreatorLinks(updatedLinks);
+            }
         } catch (error) {
             console.log("error: ", error);
         }
@@ -169,6 +200,37 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
                     </div>
                 </div>
             ))}
+            <div className="mt-1">
+                <p>Title</p>
+                <input
+                    type="text"
+                    name="title"
+                    id="title"
+                    value={newTitle || ""}
+                    className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                    placeholder="me when I link"
+                    onChange={(e) => setNewTitle(e.target.value)}
+                />
+            </div>
+            <div className="mt-1">
+                <p>URL</p>
+                <input
+                    type="text"
+                    name="url"
+                    id="url"
+                    value={newUrl || ""}
+                    className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                    placeholder="my reaction to that url"
+                    onChange={(e) => setNewUrl(e.target.value)}
+                />
+            </div>
+            <button
+                type="button"
+                className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 text-white cursor px-2 py-1 m-1"
+                onClick={addNewLink}
+            >
+                Add new link
+            </button>
         </div>
     );
 };
