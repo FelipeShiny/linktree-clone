@@ -80,30 +80,55 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
         }
     }, [creatorSlug]);
 
+    const fetchLinks = async () => {
+        try {
+            // Fetch creator links using creatorId
+            const { data: linksData, error: linksError } = await supabase
+                .from("links")
+                .select("id, title, url")
+                .eq("user_id", creatorId);
+            if (linksError) throw linksError;
+
+            setCreatorLinks(linksData);
+        } catch (error) {
+            console.log("Error fetching links data: ", error);
+        }
+    };
+
     useEffect(() => {
         if (creatorId) {
-            const fetchLinks = async () => {
-                try {
-                    // Fetch creator links using creatorId
-                    const { data: linksData, error: linksError } =
-                        await supabase
-                            .from("links")
-                            .select("id, title, url")
-                            .eq("user_id", creatorId);
-                    if (linksError) throw linksError;
-
-                    setCreatorLinks(linksData);
-                } catch (error) {
-                    console.log("Error fetching links data: ", error);
-                }
-            };
-
             fetchLinks();
         }
     }, [creatorId]);
 
+    // Delete
+    const deleteLink = async (linkId: number) => {
+        try {
+            const { error } = await supabase
+                .from("links")
+                .delete()
+                .eq("id", linkId);
+
+            if (error) throw error;
+
+            // Optionally, you can update the state to reflect the new list of links after deletion.
+            // For simplicity, we will re-fetch all links after deletion.
+            fetchLinks();
+        } catch (error) {
+            console.log("error: ", error);
+        }
+    };
+
     return (
         <div>
+            {isAuthenticated && (
+                <button
+                    className="bg-black text-white p-1 rounded-lg"
+                    onClick={async () => await supabase.auth.signOut()}
+                >
+                    Sign Out
+                </button>
+            )}
             <h1>Logged in as: {authUsername}!</h1>
             <h1>Logged in email: {authEmail}!</h1>
             {profilePicture && (
@@ -125,7 +150,17 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
                     <h1>{link.title}</h1>
                     <h1>{link.url}</h1>
                     <div className="flex flex-row gap-1">
-                        <button className="py-1 px-2 bg-black text-white rounded-lg">
+                        <button
+                            className="py-1 px-2 bg-black text-white rounded-lg"
+                            onClick={() => {
+                                const confirmDelete = window.confirm(
+                                    "Are you sure you want to delete this?"
+                                );
+                                if (confirmDelete) {
+                                    deleteLink(link.id);
+                                }
+                            }}
+                        >
                             Delete
                         </button>
                         <button className="py-1 px-2 bg-black text-white rounded-lg">
@@ -134,10 +169,6 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
                     </div>
                 </div>
             ))}
-            <h1>Links:</h1>
-            <h1>link 1</h1>
-            <h1>link 2</h1>
-            <h1>link 3</h1>
         </div>
     );
 };
