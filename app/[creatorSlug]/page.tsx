@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import supabase from "../utils/supabaseClient";
 import Image from "next/image";
+import DropDown from "../components/DropDown";
 
 type Link = {
     id: number;
@@ -129,6 +130,8 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
         }
     }, [creatorId]);
 
+    // Update
+
     // Delete
     const deleteLink = async (linkId: number) => {
         try {
@@ -177,10 +180,28 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
             )}
             <h1>@{creatorSlug}</h1>
             {creatorLinks?.map((link: Link, index: number) => (
-                <div key={index}>
-                    <h1>{link.title}</h1>
-                    <h1>{link.url}</h1>
-                    <div className="flex flex-row gap-1">
+                <div key={index} className="">
+                    <div className="p-2 bg-black text-white w-96 grid grid-cols-6 rounded-full">
+                        <div className="col-span-1"></div>
+                        <a
+                            href={
+                                link.url.startsWith("http")
+                                    ? link.url
+                                    : `https://${link.url}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="col-span-4 my-auto text-center"
+                        >
+                            <h2>{link.title}</h2>
+                        </a>
+                        <div className="col-span-1">
+                            <DropDown deleteLink={deleteLink} link={link} />
+                        </div>
+                    </div>
+                    {/* <h1>{link.title}</h1>
+                    <h1>{link.url}</h1> */}
+                    {/* <div className="flex flex-row gap-1">
                         <button
                             className="py-1 px-2 bg-black text-white rounded-lg"
                             onClick={() => {
@@ -197,7 +218,7 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
                         <button className="py-1 px-2 bg-black text-white rounded-lg">
                             Edit
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             ))}
             <div className="mt-1">
