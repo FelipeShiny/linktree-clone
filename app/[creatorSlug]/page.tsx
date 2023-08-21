@@ -226,7 +226,7 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
                 )}
             </div>
             {isLinkOwner && (
-                <div className="border flex flex-col items-center gap-2 p-2">
+                <div className="border flex flex-col items-center gap-2 p-2 bg-grey-100 rounded-lg">
                     <div className="mt-1 flex gap-2">
                         <input
                             type="text"
