@@ -165,16 +165,6 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
 
     return (
         <div className="px-5 py-10 flex flex-col h-min-screen gap-5 justify-center items-center">
-            {isAuthenticated && (
-                <button
-                    className="bg-black text-white p-1 rounded-lg"
-                    onClick={async () => await supabase.auth.signOut()}
-                >
-                    Sign Out
-                </button>
-            )}
-            <h1>Logged in as: {authUsername}</h1>
-            <h1>Logged in email: {authEmail}</h1>
             {profilePicture && (
                 <div>
                     <Image

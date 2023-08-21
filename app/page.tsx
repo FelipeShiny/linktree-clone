@@ -23,7 +23,7 @@ const Homepage = () => {
 
     return (
         <div className="flex flex-col items-center">
-            <h1>Linktree clone</h1>
+            <h1>Creators</h1>
             <div className="flex flex-col gap-2">
                 {creatorUsernames.map((username, index) => (
                     <Link key={index} href={`/${username}`}>
