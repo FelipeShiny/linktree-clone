@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import supabase from "../utils/supabaseClient";
 import Image from "next/image";
-import DropDown from "../components/DropDown";
+import LinkDropDown from "../components/LinkDropDown";
 
 type Link = {
     id: number;
@@ -17,6 +17,7 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
     const [authUserId, setAuthUserId] = useState<string | undefined>();
     const [authEmail, setAuthEmail] = useState<string | undefined>();
     const [authUsername, setAuthUsername] = useState<string | undefined>();
+    const [isLinkOwner, setIsLinkOwner] = useState(false);
 
     useEffect(() => {
         const getAuthUser = async () => {
@@ -24,17 +25,17 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
             const userData = user.data.user;
 
             if (userData) {
-                const userId = userData?.id;
+                const loggedInUserId = userData?.id;
 
                 setIsAuthenticated(true);
-                setAuthUserId(userId);
+                setAuthUserId(loggedInUserId);
                 setAuthEmail(userData?.email);
 
                 try {
                     const { data, error } = await supabase
                         .from("users")
                         .select("username")
-                        .eq("id", userId);
+                        .eq("id", loggedInUserId);
 
                     if (error) throw error;
                     setAuthUsername(data[0]?.username);
@@ -55,6 +56,13 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
     // Create
     const [newTitle, setNewTitle] = useState<string | undefined>();
     const [newUrl, setNewUrl] = useState<string | undefined>();
+    const [creatorId, setCreatorId] = useState<string | undefined>();
+
+    useEffect(() => {
+        if (authUserId && creatorId && authUserId == creatorId) {
+            setIsLinkOwner(true);
+        }
+    }, [authUserId, creatorId]);
 
     const addNewLink = async () => {
         try {
@@ -83,8 +91,8 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
     // Read
     const { creatorSlug } = params;
     const [profilePicture, setProfilePicture] = useState<string | undefined>();
-    const [creatorId, setCreatorId] = useState<string | undefined>();
     const [creatorLinks, setCreatorLinks] = useState<Link[]>();
+    const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
 
     const fetchData = async () => {
         try {
@@ -119,8 +127,10 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
             if (linksError) throw linksError;
 
             setCreatorLinks(linksData);
+            setIsLinkLoading(false);
         } catch (error) {
             console.log("Error fetching links data: ", error);
+            setIsLinkLoading(false);
         }
     };
 
@@ -154,7 +164,7 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
     };
 
     return (
-        <div>
+        <div className="px-5 py-10 flex flex-col h-min-screen gap-5 justify-center items-center">
             {isAuthenticated && (
                 <button
                     className="bg-black text-white p-1 rounded-lg"
@@ -163,8 +173,8 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
                     Sign Out
                 </button>
             )}
-            <h1>Logged in as: {authUsername}!</h1>
-            <h1>Logged in email: {authEmail}!</h1>
+            <h1>Logged in as: {authUsername}</h1>
+            <h1>Logged in email: {authEmail}</h1>
             {profilePicture && (
                 <div>
                     <Image
@@ -179,79 +189,73 @@ const CreatorLinksPage = ({ params }: { params: { creatorSlug: string } }) => {
                 </div>
             )}
             <h1>@{creatorSlug}</h1>
-            {creatorLinks?.map((link: Link, index: number) => (
-                <div key={index} className="">
-                    <div className="p-2 bg-black text-white w-96 grid grid-cols-6 rounded-full">
-                        <div className="col-span-1"></div>
-                        <a
-                            href={
-                                link.url.startsWith("http")
-                                    ? link.url
-                                    : `https://${link.url}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="col-span-4 my-auto text-center"
-                        >
-                            <h2>{link.title}</h2>
-                        </a>
-                        <div className="col-span-1">
-                            <DropDown deleteLink={deleteLink} link={link} />
+            <div className="flex flex-col gap-2">
+                {isLinkLoading ? (
+                    <h1>Loading...</h1>
+                ) : creatorLinks && creatorLinks.length > 0 ? (
+                    creatorLinks.map((link: Link, index: number) => (
+                        <div key={index} className="">
+                            <div className="p-2 bg-black text-white w-96 grid grid-cols-6 rounded-full">
+                                <div className="col-span-1"></div>
+                                <a
+                                    href={
+                                        link.url.startsWith("http")
+                                            ? link.url
+                                            : `https://${link.url}`
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="col-span-4 my-auto text-center"
+                                >
+                                    <h2>{link.title}</h2>
+                                </a>
+
+                                {isLinkOwner && (
+                                    <div className="col-span-1">
+                                        <LinkDropDown
+                                            deleteLink={deleteLink}
+                                            link={link}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
+                    ))
+                ) : (
+                    <h2>This creator doesn't have any links.</h2>
+                )}
+            </div>
+            {isLinkOwner && (
+                <div className="border flex flex-col items-center gap-2 p-2">
+                    <div className="mt-1 flex gap-2">
+                        <input
+                            type="text"
+                            name="title"
+                            id="title"
+                            value={newTitle || ""}
+                            className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                            placeholder="Title"
+                            onChange={(e) => setNewTitle(e.target.value)}
+                        />
+                        <input
+                            type="text"
+                            name="url"
+                            id="url"
+                            value={newUrl || ""}
+                            className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                            placeholder="URL"
+                            onChange={(e) => setNewUrl(e.target.value)}
+                        />
                     </div>
-                    {/* <h1>{link.title}</h1>
-                    <h1>{link.url}</h1> */}
-                    {/* <div className="flex flex-row gap-1">
-                        <button
-                            className="py-1 px-2 bg-black text-white rounded-lg"
-                            onClick={() => {
-                                const confirmDelete = window.confirm(
-                                    "Are you sure you want to delete this?"
-                                );
-                                if (confirmDelete) {
-                                    deleteLink(link.id);
-                                }
-                            }}
-                        >
-                            Delete
-                        </button>
-                        <button className="py-1 px-2 bg-black text-white rounded-lg">
-                            Edit
-                        </button>
-                    </div> */}
+                    <button
+                        type="button"
+                        className="rounded-md border border-transparent bg-indigo-600 text-white cursor px-2 py-1"
+                        onClick={addNewLink}
+                    >
+                        Add new link
+                    </button>
                 </div>
-            ))}
-            <div className="mt-1">
-                <p>Title</p>
-                <input
-                    type="text"
-                    name="title"
-                    id="title"
-                    value={newTitle || ""}
-                    className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                    placeholder="me when I link"
-                    onChange={(e) => setNewTitle(e.target.value)}
-                />
-            </div>
-            <div className="mt-1">
-                <p>URL</p>
-                <input
-                    type="text"
-                    name="url"
-                    id="url"
-                    value={newUrl || ""}
-                    className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                    placeholder="my reaction to that url"
-                    onChange={(e) => setNewUrl(e.target.value)}
-                />
-            </div>
-            <button
-                type="button"
-                className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 text-white cursor px-2 py-1 m-1"
-                onClick={addNewLink}
-            >
-                Add new link
-            </button>
+            )}
         </div>
     );
 };

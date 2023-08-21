@@ -6,7 +6,7 @@ interface DropDownProps {
     link: any;
 }
 
-const DropDown: React.FC<DropDownProps> = ({ deleteLink, link }) => {
+const LinkDropDown: React.FC<DropDownProps> = ({ deleteLink, link }) => {
     return (
         <div className="text-right">
             <Menu as="div" className="relative inline-block text-left">
@@ -91,7 +91,7 @@ const DropDown: React.FC<DropDownProps> = ({ deleteLink, link }) => {
     );
 };
 
-export default DropDown;
+export default LinkDropDown;
 
 function EditInactiveIcon(props: { className?: string }) {
     return (
