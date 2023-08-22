@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import supabase from "../utils/supabaseClient";
+import React from "react";
 import Link from "next/link";
 import { observer } from "mobx-react";
 import AuthStore from "../interfaces/AuthStore";
@@ -26,11 +25,6 @@ const Header = observer(() => {
         <div className="px-10 flex justify-between items-center h-14 bg-black text-white">
             <Link href={"/"}>
                 <h2>Linktree Clone</h2>
-                <h2>
-                    {AuthStore.isAuthenticated
-                        ? "Authenticated"
-                        : "Not Authenticated"}
-                </h2>
             </Link>
 
             {AuthStore.isAuthenticated ? (

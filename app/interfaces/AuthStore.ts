@@ -15,6 +15,7 @@ class AuthStore {
             authUsername: observable,
             getAuthUser: action,
             signInWithEmail: action,
+            signUpWithEmail: action,
         });
     }
 
@@ -60,9 +61,9 @@ class AuthStore {
 
             const userId = resp.data.user?.id;
             runInAction(() => {
+                this.getAuthUser();
                 this.authUserId = userId;
                 this.isAuthenticated = true;
-                this.getAuthUser();
             });
         } catch (error) {
             console.log("Login error:", error);
@@ -79,6 +80,36 @@ class AuthStore {
         });
         await supabase.auth.signOut();
     };
+
+    async signUpWithEmail(email: string, password: string, username: string) {
+        try {
+            const resp = await supabase.auth.signUp({
+                email: email,
+                password: password,
+            });
+            if (resp.error) throw resp.error;
+            const userId = resp.data.user?.id;
+            if (userId) {
+                await this.createUser(userId, username);
+                this.getAuthUser();
+            }
+        } catch (error) {
+            console.log("Signup error:", error);
+            throw error;
+        }
+    }
+
+    async createUser(userId: string, username: string) {
+        try {
+            const { error } = await supabase
+                .from("users")
+                .insert({ id: userId, username: username });
+            if (error) throw error;
+        } catch (error) {
+            console.log("Create user error: ", error);
+            throw error;
+        }
+    }
 }
 
 export default new AuthStore();

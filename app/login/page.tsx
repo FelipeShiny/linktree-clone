@@ -5,6 +5,7 @@ import supabase from "../utils/supabaseClient";
 import { useRouter } from "next/navigation";
 import { observer } from "mobx-react";
 import AuthStore from "../interfaces/AuthStore";
+import Link from "next/link";
 
 const Login = observer(() => {
     const router = useRouter();
@@ -68,6 +69,12 @@ const Login = observer(() => {
             >
                 Login
             </button>
+            <div>
+                <h2>Don't have account yet a?</h2>
+                <Link href={"/signup"}>
+                    <button>Sign Up</button>
+                </Link>
+            </div>
         </div>
     );
 });
