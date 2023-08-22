@@ -3,8 +3,10 @@
 import React, { useState } from "react";
 import supabase from "../utils/supabaseClient";
 import { useRouter } from "next/navigation";
+import { observer } from "mobx-react";
+import AuthStore from "../interfaces/AuthStore";
 
-const Login = () => {
+const Login = observer(() => {
     const router = useRouter();
     const [email, setEmail] = useState<string | undefined>();
     const [password, setPassword] = useState<string | undefined>();
@@ -12,14 +14,12 @@ const Login = () => {
     async function signInWithEmail() {
         try {
             if (email && password) {
-                const resp = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
-                if (resp.error) throw resp.error;
-                const userId = resp.data.user?.id;
-                console.log("userId: ", userId);
-                router.push("/");
+                await AuthStore.signInWithEmail(email, password);
+
+                if (AuthStore.isAuthenticated) {
+                    console.log("Logged in");
+                    router.push("/");
+                }
             }
         } catch (error) {
             console.log("error", error);
@@ -70,6 +70,6 @@ const Login = () => {
             </button>
         </div>
     );
-};
+});
 
 export default Login;

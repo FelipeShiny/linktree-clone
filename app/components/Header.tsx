@@ -3,67 +3,46 @@
 import React, { useState, useEffect } from "react";
 import supabase from "../utils/supabaseClient";
 import Link from "next/link";
+import { observer } from "mobx-react";
+import AuthStore from "../interfaces/AuthStore";
+import { useRouter } from "next/navigation";
 
-const Header = () => {
-    // Authentication
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [authUserId, setAuthUserId] = useState<string | undefined>();
-    const [authEmail, setAuthEmail] = useState<string | undefined>();
-    const [authUsername, setAuthUsername] = useState<string | undefined>();
+const Header = observer(() => {
+    const router = useRouter();
+    async function signOut() {
+        try {
+            await AuthStore.handleSignOut();
 
-    const getAuthUser = async () => {
-        const user = await supabase.auth.getUser();
-        const userData = user.data.user;
-
-        if (userData) {
-            const loggedInUserId = userData?.id;
-
-            setIsAuthenticated(true);
-            setAuthUserId(loggedInUserId);
-            setAuthEmail(userData?.email);
-
-            try {
-                const { data, error } = await supabase
-                    .from("users")
-                    .select("username")
-                    .eq("id", loggedInUserId);
-
-                if (error) throw error;
-                setAuthUsername(data[0]?.username);
-            } catch (error) {
-                console.log(
-                    "Error fetching username of logged in user: ",
-                    error
-                );
+            if (!!!AuthStore.isAuthenticated) {
+                console.log("Logged out");
+                router.push("/login");
             }
+        } catch (error) {
+            console.log("error", error);
         }
-    };
-
-    useEffect(() => {
-        getAuthUser();
-    }, []);
-
-    const handleSignOut = async () => {
-        await supabase.auth.signOut();
-        setIsAuthenticated(false);
-    };
+    }
 
     return (
         <div className="px-10 flex justify-between items-center h-14 bg-black text-white">
             <Link href={"/"}>
                 <h2>Linktree Clone</h2>
+                <h2>
+                    {AuthStore.isAuthenticated
+                        ? "Authenticated"
+                        : "Not Authenticated"}
+                </h2>
             </Link>
 
-            {isAuthenticated ? (
+            {AuthStore.isAuthenticated ? (
                 <>
-                    <Link href={`/${authUsername}`}>
+                    <Link href={`/${AuthStore.authUsername}`}>
                         <h2>
-                            {authEmail} / {authUsername}
+                            {AuthStore.authEmail} / {AuthStore.authUsername}
                         </h2>
                     </Link>
                     <button
                         className="bg-red-600 text-white px-2 py-1 rounded-lg"
-                        onClick={handleSignOut}
+                        onClick={signOut}
                     >
                         Sign Out
                     </button>
@@ -75,6 +54,6 @@ const Header = () => {
             )}
         </div>
     );
-};
+});
 
 export default Header;
