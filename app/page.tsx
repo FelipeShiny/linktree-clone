@@ -22,21 +22,23 @@ const Homepage = () => {
     }, []);
 
     return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center m-5">
             <Link href={"/tutorial"}>
-                <h2 className="bg-blue-300 py-2 px-4 rounded-xl">
+                <h2 className="bg-blue-300 py-2 px-4 rounded-xl hover:opacity-80">
                     Click me for tutorial
                 </h2>
             </Link>
-            <h1>Creators</h1>
-            <div className="flex flex-col gap-2">
-                {creatorUsernames.map((username, index) => (
-                    <Link key={index} href={`/${username}`}>
-                        <p className="bg-black text-white p-2 rounded-lg">
-                            {username}
-                        </p>
-                    </Link>
-                ))}
+            <div>
+                <h1 className="text-2xl font-bold py-3">Creators</h1>
+                <div className="flex flex-col gap-2">
+                    {creatorUsernames.map((username, index) => (
+                        <Link key={index} href={`/${username}`}>
+                            <p className="bg-black text-white p-2 rounded-lg hover:opacity-80">
+                                {username}
+                            </p>
+                        </Link>
+                    ))}
+                </div>
             </div>
         </div>
     );
