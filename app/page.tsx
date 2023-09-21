@@ -23,6 +23,11 @@ const Homepage = () => {
 
     return (
         <div className="flex flex-col items-center">
+            <Link href={"/tutorial"}>
+                <h2 className="bg-blue-300 py-2 px-4 rounded-xl">
+                    Click me for tutorial
+                </h2>
+            </Link>
             <h1>Creators</h1>
             <div className="flex flex-col gap-2">
                 {creatorUsernames.map((username, index) => (

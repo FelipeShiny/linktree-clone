@@ -68,6 +68,13 @@ const Login = () => {
             >
                 Login
             </button>
+            <div className="flex flex-col w-1/2 p-5 mx-auto bg-black text-white rounded-xl">
+                <h2 className="text-lg font-bold">
+                    Login Credential for test_user
+                </h2>
+                <p>Email: anwari.fikri@gmail.com</p>
+                <p>Password: test_user123</p>
+            </div>
         </div>
     );
 };
