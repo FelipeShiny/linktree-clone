@@ -81,6 +81,13 @@ const Login = observer(() => {
                         </button>
                     </Link>
                 </div>
+                <div className="flex flex-col p-5 bg-black text-white rounded-xl md:mx-auto ">
+                    <h2 className="text-lg font-bold">
+                        Login Credential for test_user
+                    </h2>
+                    <p>Email: anwari.fikri@gmail.com</p>
+                    <p>Password: test_user123</p>
+                </div>
             </div>
         </div>
     );
