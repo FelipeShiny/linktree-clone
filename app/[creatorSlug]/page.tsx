@@ -6,6 +6,7 @@ import Image from "next/image";
 import LinkDropDown from "../components/LinkDropDown";
 import { observer } from "mobx-react";
 import AuthStore from "../interfaces/AuthStore";
+import { v4 as uuidv4 } from "uuid";
 
 type Link = {
     id: number;
@@ -58,6 +59,20 @@ const CreatorLinksPage = observer(
             }
         };
 
+        // Upload file using standard upload
+        const uploadFile = async (file: File) => {
+            const { data, error } = await supabase.storage
+                .from("profile_picture")
+                .upload(creatorId + "/" + uuidv4(), file);
+            if (error) {
+                // Handle error
+                console.error(error);
+            } else {
+                // Handle success
+                console.log("File uploaded successfully:", data);
+            }
+        };
+
         // Read
         const { creatorSlug } = params;
         const [profilePicture, setProfilePicture] = useState<
@@ -66,18 +81,17 @@ const CreatorLinksPage = observer(
         const [creatorLinks, setCreatorLinks] = useState<Link[]>();
         const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
 
-        const fetchData = async () => {
+        const fetchCreatorId = async () => {
             try {
                 // Fetch profile picture and creator ID
                 const { data: profileData, error: profileError } =
                     await supabase
                         .from("users")
-                        .select("id, profile_picture_url")
+                        .select("id")
                         .eq("username", creatorSlug);
                 if (profileError) throw profileError;
 
                 const fetchedCreatorId = profileData[0]?.id;
-                setProfilePicture(profileData[0]?.profile_picture_url);
                 setCreatorId(fetchedCreatorId);
             } catch (error) {
                 console.log("Error fetching profile data: ", error);
@@ -86,7 +100,33 @@ const CreatorLinksPage = observer(
 
         useEffect(() => {
             if (creatorSlug) {
-                fetchData();
+                fetchCreatorId();
+            }
+        }, [creatorSlug]);
+
+        const fetchProfilePicture = async () => {
+            try {
+                const { data: profilePicture, error: profileError } =
+                    await supabase.storage
+                        .from("profile_picture")
+                        .list(creatorId + "/", {
+                            limit: 100,
+                            offset: 0,
+                            sortBy: { column: "name", order: "asc" },
+                        });
+
+                if (profilePicture) {
+                    console.log(profilePicture[0].name);
+                    setProfilePicture(profilePicture[0].name);
+                }
+            } catch (error) {
+                // Handle errors here
+            }
+        };
+
+        useEffect(() => {
+            if (creatorSlug) {
+                fetchProfilePicture();
             }
         }, [creatorSlug]);
 
@@ -110,6 +150,7 @@ const CreatorLinksPage = observer(
         useEffect(() => {
             if (creatorId) {
                 fetchLinks();
+                fetchProfilePicture();
             }
         }, [creatorId]);
 
@@ -138,15 +179,27 @@ const CreatorLinksPage = observer(
 
         return (
             <div className="px-5 py-10 flex flex-col h-min-screen gap-5 justify-center items-center">
-                {profilePicture && (
+                {creatorId && profilePicture ? (
                     <div>
                         <Image
-                            src={profilePicture}
+                            src={`https://dpehbxmmipfxwdjjmuog.supabase.co/storage/v1/object/public/profile_picture/${creatorId}/${profilePicture}`}
                             alt="profile_picture"
                             width={0}
                             height={0}
                             sizes={"1"}
                             className="w-48 rounded-full"
+                            priority
+                        />
+                    </div>
+                ) : (
+                    <div>
+                        <Image
+                            src={"/assets/default-profile-picture.jpg"}
+                            alt="profile_picture"
+                            width={0}
+                            height={0}
+                            sizes={"1"}
+                            className="w-48 rounded-full border border-black"
                             priority
                         />
                     </div>
@@ -189,35 +242,52 @@ const CreatorLinksPage = observer(
                     )}
                 </div>
                 {isLinkOwner && (
-                    <div className="border flex flex-col items-center gap-2 p-2 bg-grey-100 rounded-lg">
-                        <div className="mt-1 flex gap-2">
+                    <>
+                        <div className="border flex flex-col items-center gap-2 p-2 bg-grey-100 rounded-lg">
+                            <div className="mt-1 flex gap-2">
+                                <input
+                                    type="text"
+                                    name="title"
+                                    id="title"
+                                    value={newTitle || ""}
+                                    className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                                    placeholder="Title"
+                                    onChange={(e) =>
+                                        setNewTitle(e.target.value)
+                                    }
+                                />
+                                <input
+                                    type="text"
+                                    name="url"
+                                    id="url"
+                                    value={newUrl || ""}
+                                    className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                                    placeholder="URL"
+                                    onChange={(e) => setNewUrl(e.target.value)}
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                className="rounded-md border border-transparent bg-indigo-600 text-white cursor px-2 py-1"
+                                onClick={addNewLink}
+                            >
+                                Add new link
+                            </button>
+                        </div>
+
+                        <div>
                             <input
-                                type="text"
-                                name="title"
-                                id="title"
-                                value={newTitle || ""}
-                                className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                                placeholder="Title"
-                                onChange={(e) => setNewTitle(e.target.value)}
-                            />
-                            <input
-                                type="text"
-                                name="url"
-                                id="url"
-                                value={newUrl || ""}
-                                className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                                placeholder="URL"
-                                onChange={(e) => setNewUrl(e.target.value)}
+                                type="file"
+                                onChange={(e) => {
+                                    const selectedFile =
+                                        e.target.files && e.target.files[0];
+                                    if (selectedFile) {
+                                        uploadFile(selectedFile);
+                                    }
+                                }}
                             />
                         </div>
-                        <button
-                            type="button"
-                            className="rounded-md border border-transparent bg-indigo-600 text-white cursor px-2 py-1"
-                            onClick={addNewLink}
-                        >
-                            Add new link
-                        </button>
-                    </div>
+                    </>
                 )}
             </div>
         );
