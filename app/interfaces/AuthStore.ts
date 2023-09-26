@@ -1,5 +1,6 @@
 import { makeObservable, observable, action, runInAction } from "mobx";
 import supabase from "../utils/supabaseClient";
+import Cookies from "js-cookie";
 
 class AuthStore {
     isAuthenticated: boolean = false;
@@ -17,6 +18,12 @@ class AuthStore {
             signInWithEmail: action,
             signUpWithEmail: action,
         });
+
+        // Initialize observables from cookies if they exist
+        this.isAuthenticated = Cookies.get("isAuthenticated") === "true";
+        this.authUserId = Cookies.get("authUserId") || "";
+        this.authEmail = Cookies.get("authEmail") || "";
+        this.authUsername = Cookies.get("authUsername") || "";
     }
 
     async getAuthUser() {
@@ -39,6 +46,8 @@ class AuthStore {
                     this.authEmail = userData?.email;
                     this.authUsername = data[0]?.username;
                 });
+
+                Cookies.set("authUsername", data[0]?.username);
             } catch (error) {
                 console.log(
                     "Error fetching username of logged in user: ",
@@ -64,6 +73,9 @@ class AuthStore {
                 this.getAuthUser();
                 this.authUserId = userId;
                 this.isAuthenticated = true;
+                Cookies.set("isAuthenticated", "true");
+                Cookies.set("authUserId", userId);
+                Cookies.set("authEmail", email);
             });
         } catch (error) {
             console.log("Login error:", error);
@@ -78,6 +90,12 @@ class AuthStore {
             this.authUsername = "";
             this.authEmail = "";
         });
+
+        Cookies.remove("isAuthenticated");
+        Cookies.remove("authUserId");
+        Cookies.remove("authEmail");
+        Cookies.remove("authUsername");
+
         await supabase.auth.signOut();
     };
 

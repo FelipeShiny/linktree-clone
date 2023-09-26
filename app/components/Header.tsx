@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { observer } from "mobx-react";
 import AuthStore from "../interfaces/AuthStore";
@@ -21,13 +21,19 @@ const Header = observer(() => {
         }
     }
 
+    const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+
+    useEffect(() => {
+        setIsUserLoggedIn(AuthStore.isAuthenticated);
+    }, [AuthStore.isAuthenticated]);
+
     return (
         <div className="px-10 flex justify-between items-center h-14 bg-black text-white">
             <Link href={"/"}>
                 <h2>Linktree Clone</h2>
             </Link>
 
-            {AuthStore.isAuthenticated ? (
+            {isUserLoggedIn ? (
                 <>
                     <Link href={`/${AuthStore.authUsername}`}>
                         <h2>
@@ -42,9 +48,11 @@ const Header = observer(() => {
                     </button>
                 </>
             ) : (
-                <Link href={`/login`}>
-                    <button>Log in</button>
-                </Link>
+                <>
+                    <Link href={`/login`}>
+                        <button>Log in</button>
+                    </Link>
+                </>
             )}
         </div>
     );

@@ -6,6 +6,7 @@ import Image from "next/image";
 import LinkDropDown from "../components/LinkDropDown";
 import { observer } from "mobx-react";
 import AuthStore from "../interfaces/AuthStore";
+import { useRouter } from "next/navigation";
 
 type Link = {
     id: number;
@@ -59,6 +60,7 @@ const CreatorLinksPage = observer(
         };
 
         // Upload Profile Picture
+        const router = useRouter();
         const uploadProfilePicture = async (file: File) => {
             try {
                 const { data, error } = await supabase.storage
@@ -75,11 +77,11 @@ const CreatorLinksPage = observer(
                         console.error(error);
                     } else {
                         console.log("File uploaded successfully:", data);
-                        window.location.reload();
+                        router.refresh();
                     }
                 } else {
                     console.log("File uploaded successfully:", data);
-                    window.location.reload();
+                    router.refresh();
                 }
             } catch (error) {
                 console.error("uuuuu", error);
