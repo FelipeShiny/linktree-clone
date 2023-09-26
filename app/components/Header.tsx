@@ -25,6 +25,7 @@ const Header = observer(() => {
 
     useEffect(() => {
         setIsUserLoggedIn(AuthStore.isAuthenticated);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [AuthStore.isAuthenticated]);
 
     return (

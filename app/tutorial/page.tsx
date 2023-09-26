@@ -46,7 +46,7 @@ const Tutorial = () => {
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4">
                     <strong className="font-bold">Warning!</strong>
                     <p>
-                        Please use throwaway email and password because I don't
+                        Please use throwaway email and password because I do not
                         even know how secure my app is lol
                     </p>
                 </div>

@@ -251,7 +251,7 @@ const CreatorLinksPage = observer(
                             </div>
                         ))
                     ) : (
-                        <h2>This creator doesn't have any links.</h2>
+                        <h2>This creator does not have any links.</h2>
                     )}
                 </div>
                 {isLinkOwner && (
