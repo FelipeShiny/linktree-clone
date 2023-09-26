@@ -6,7 +6,6 @@ import Image from "next/image";
 import LinkDropDown from "../components/LinkDropDown";
 import { observer } from "mobx-react";
 import AuthStore from "../interfaces/AuthStore";
-import { v4 as uuidv4 } from "uuid";
 
 type Link = {
     id: number;
@@ -59,25 +58,37 @@ const CreatorLinksPage = observer(
             }
         };
 
-        // Upload file using standard upload
-        const uploadFile = async (file: File) => {
-            const { data, error } = await supabase.storage
-                .from("profile_picture")
-                .upload(creatorId + "/" + uuidv4(), file);
-            if (error) {
-                // Handle error
-                console.error(error);
-            } else {
-                // Handle success
-                console.log("File uploaded successfully:", data);
+        // Upload Profile Picture
+        const uploadProfilePicture = async (file: File) => {
+            try {
+                const { data, error } = await supabase.storage
+                    .from("profile_picture")
+                    .update(creatorId + "/" + "avatar", file, {
+                        cacheControl: "3600",
+                    });
+                if (error) {
+                    console.error("cant update");
+                    const { data, error } = await supabase.storage
+                        .from("profile_picture")
+                        .upload(creatorId + "/" + "avatar", file);
+                    if (error) {
+                        // Handle error
+                        console.error(error);
+                    } else {
+                        // Handle success
+                        console.log("File uploaded successfully:", data);
+                    }
+                } else {
+                    console.log("File uploaded successfully:", data);
+                }
+            } catch (error) {
+                console.error("uuuuu", error);
             }
         };
 
         // Read
         const { creatorSlug } = params;
-        const [profilePicture, setProfilePicture] = useState<
-            string | undefined
-        >();
+        const [profilePicture, setProfilePicture] = useState<boolean>(false);
         const [creatorLinks, setCreatorLinks] = useState<Link[]>();
         const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
 
@@ -106,7 +117,7 @@ const CreatorLinksPage = observer(
 
         const fetchProfilePicture = async () => {
             try {
-                const { data: profilePicture, error: profileError } =
+                const { data: profilePictureData, error: profileError } =
                     await supabase.storage
                         .from("profile_picture")
                         .list(creatorId + "/", {
@@ -115,9 +126,9 @@ const CreatorLinksPage = observer(
                             sortBy: { column: "name", order: "asc" },
                         });
 
-                if (profilePicture) {
-                    console.log(profilePicture[0].name);
-                    setProfilePicture(profilePicture[0].name);
+                if (profilePictureData) {
+                    console.log(profilePictureData[0].name);
+                    setProfilePicture(true);
                 }
             } catch (error) {
                 // Handle errors here
@@ -182,7 +193,7 @@ const CreatorLinksPage = observer(
                 {creatorId && profilePicture ? (
                     <div>
                         <Image
-                            src={`https://dpehbxmmipfxwdjjmuog.supabase.co/storage/v1/object/public/profile_picture/${creatorId}/${profilePicture}`}
+                            src={`https://dpehbxmmipfxwdjjmuog.supabase.co/storage/v1/object/public/profile_picture/${creatorId}/avatar?nocache=${Date.now()}`}
                             alt="profile_picture"
                             width={0}
                             height={0}
@@ -282,7 +293,7 @@ const CreatorLinksPage = observer(
                                     const selectedFile =
                                         e.target.files && e.target.files[0];
                                     if (selectedFile) {
-                                        uploadFile(selectedFile);
+                                        uploadProfilePicture(selectedFile);
                                     }
                                 }}
                             />
