@@ -72,14 +72,14 @@ const CreatorLinksPage = observer(
                         .from("profile_picture")
                         .upload(creatorId + "/" + "avatar", file);
                     if (error) {
-                        // Handle error
                         console.error(error);
                     } else {
-                        // Handle success
                         console.log("File uploaded successfully:", data);
+                        window.location.reload();
                     }
                 } else {
                     console.log("File uploaded successfully:", data);
+                    window.location.reload();
                 }
             } catch (error) {
                 console.error("uuuuu", error);
@@ -287,6 +287,9 @@ const CreatorLinksPage = observer(
                         </div>
 
                         <div>
+                            <h2 className="font-bold text-lg pb-3">
+                                Upload Profile Picture
+                            </h2>
                             <input
                                 type="file"
                                 onChange={(e) => {
