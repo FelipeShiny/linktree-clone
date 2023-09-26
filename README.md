@@ -1,34 +1,21 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Link Tree Clone
 
-## Getting Started
+[![link-tree-clone](https://img.shields.io/badge/Try_out-Linktree_Clone-blue)](https://linktree-clone-ten-pink.vercel.app)
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+This project is a Linktree clone developed for me to explore the features of Supabase, a powerful open-source Firebase alternative. With this Linktree Clone, you can create a page with links, similar to linktr.ee website. It provides features for both creators and users to manage and access links easily.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
+- ✅ Authentication system (Login and Sign Up)
+- ✅ View other creator's page
+- ✅ Add/Delete links
+- ✅ Change profile pictures
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+⚠️ Warning: Please use a throwaway email and password for testing purposes, as the app's security is not guaranteed.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Acknowledgement
 
-## Learn More
+[Official Supabase Website](https://supabase.com)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+[Code A Linktree Clone With React, NextJS, TailwindCSS, And Supabase (Full Coding Tutorial)](https://www.youtube.com/watch?v=Pbr7M4c9O3Q&t=240s) by [YourAverageTechBro](https://www.youtube.com/@YourAverageTechBro)
