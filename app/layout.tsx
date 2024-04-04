@@ -17,7 +17,9 @@ export default function RootLayout({
                 {/* <script src="../path/to/flowbite/dist/flowbite.min.js"></script> */}
                 <Header />
                 {children}
-                <Walkthrough />
+                <div className="fixed bottom-0 mx-auto flex w-full justify-center">
+                    <Walkthrough />
+                </div>
             </body>
         </html>
     );
