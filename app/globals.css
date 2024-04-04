@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --text-color: #222222; 
+    --background-color: #f3f3f1;
+}
+
+body {
+    color: var(--text-color);
+    background: var(--background-color);
+}
+
+@layer base {
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    li {
+        @apply text-[#222222];
+    }
+
+    h1 {
+        @apply text-4xl tracking-wide md:text-5xl;
+    }
+
+    h2 {
+        @apply text-3xl sm:text-4xl;
+    }
+
+    h3 {
+        @apply text-2xl sm:text-3xl text-[#64B4F0];
+    }
+
+    h4 {
+        @apply text-xl sm:text-2xl;
+    }
+
+    h5 {
+        @apply text-lg md:text-xl;
+    }
+
+    h6 {
+        @apply text-base md:text-lg;
+    }
+
+    p,
+    ul,
+    li {
+        @apply text-opacity-90 text-base;
+    }
+
+    button {
+        @apply w-full gap-2 flex items-center justify-center bg-[#8129D9] rounded-full shadow-sm px-3 py-2 cursor-pointer;
+    }
+
+    button p {
+        @apply text-white;
+    }
+
+    button h3 {
+        @apply text-white hidden md:flex;
+    }
+}

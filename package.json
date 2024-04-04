@@ -38,6 +38,8 @@
     "eslint": "^8.47.0",
     "eslint-plugin-mobx": "^0.0.9",
     "postcss": "^8.4.27",
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.5.13",
     "tailwindcss": "^3.3.3"
   }
 }

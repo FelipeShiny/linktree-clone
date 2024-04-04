@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { observer } from "mobx-react";
-import AuthStore from "../interfaces/AuthStore";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { observer } from 'mobx-react';
+import AuthStore from '../interfaces/AuthStore';
+import { useRouter } from 'next/navigation';
 
 const Header = observer(() => {
     const router = useRouter();
@@ -13,11 +13,11 @@ const Header = observer(() => {
             await AuthStore.handleSignOut();
 
             if (!!!AuthStore.isAuthenticated) {
-                console.log("Logged out");
-                router.push("/login");
+                console.log('Logged out');
+                router.push('/login');
             }
         } catch (error) {
-            console.log("error", error);
+            console.log('error', error);
         }
     }
 
@@ -29,29 +29,21 @@ const Header = observer(() => {
     }, [AuthStore.isAuthenticated]);
 
     return (
-        <div className="px-10 flex justify-between items-center h-14 bg-black text-white">
-            <Link href={"/"}>
-                <h2>Linktree Clone</h2>
+        <div className="flex h-20 items-center justify-between bg-white px-7">
+            <Link href={'/'}>
+                <h5>Linktree Clone</h5>
             </Link>
 
             {isUserLoggedIn ? (
                 <>
-                    <Link href={`/${AuthStore.authUsername}`}>
-                        <h2>
-                            {AuthStore.authEmail} / {AuthStore.authUsername}
-                        </h2>
-                    </Link>
-                    <button
-                        className="bg-red-600 text-white px-2 py-1 rounded-lg"
-                        onClick={signOut}
-                    >
-                        Sign Out
-                    </button>
+                    <div>
+                        <button onClick={signOut}>Sign Out</button>
+                    </div>
                 </>
             ) : (
                 <>
                     <Link href={`/login`}>
-                        <button>Log in</button>
+                        <button className="text-white">Log in</button>
                     </Link>
                 </>
             )}

@@ -1,8 +1,10 @@
-import { Inter } from "next/font/google";
-import "./globals.css";
-import Header from "./components/Header";
+import { Inter } from 'next/font/google';
+import './globals.css';
+import Header from './components/Header';
+import { Outfit } from 'next/font/google';
+import Walkthrough from './components/Walkthrough';
 
-const inter = Inter({ subsets: ["latin"] });
+const outfit = Outfit({ subsets: ['latin'] });
 
 export default function RootLayout({
     children,
@@ -11,10 +13,11 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body className={inter.className}>
+            <body className={outfit.className}>
                 {/* <script src="../path/to/flowbite/dist/flowbite.min.js"></script> */}
                 <Header />
                 {children}
+                <Walkthrough />
             </body>
         </html>
     );
