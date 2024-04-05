@@ -7,7 +7,7 @@ import LinkDropDown from '../components/LinkDropDown';
 import { observer } from 'mobx-react';
 import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
-import { uploadProfilePicture } from '../utils/profile';
+import { addNewLink, uploadProfilePicture } from '../utils/profile';
 
 type Link = {
     id: number;
@@ -22,9 +22,9 @@ const CreatorLinksPage = observer(
         // CRUD
 
         // Create
-        const [newTitle, setNewTitle] = useState<string | undefined>();
-        const [newUrl, setNewUrl] = useState<string | undefined>();
-        const [creatorId, setCreatorId] = useState<string | undefined>();
+        const [newTitle, setNewTitle] = useState<string>('');
+        const [newUrl, setNewUrl] = useState<string>('');
+        const [creatorId, setCreatorId] = useState<string>('');
 
         useEffect(() => {
             if (
@@ -36,63 +36,37 @@ const CreatorLinksPage = observer(
             }
         }, [AuthStore.authUserId, creatorId]);
 
-        const addNewLink = async () => {
-            try {
-                if (newTitle && newUrl && AuthStore.authUserId) {
-                    const { data, error } = await supabase
-                        .from('links')
-                        .insert({
-                            title: newTitle,
-                            url: newUrl,
-                            user_id: AuthStore.authUserId,
-                        })
-                        .select();
-                    if (error) throw error;
-                    console.log('New link successfully created: ', data);
-                    if (creatorLinks) {
-                        setCreatorLinks([...data, ...creatorLinks]);
-                    }
-                    setNewTitle('');
-                    setNewUrl('');
-                }
-            } catch (error) {
-                console.log('Error in creating new link: ', error);
-            }
-        };
+        // const addNewLink = async () => {
+        //     try {
+        //         if (newTitle && newUrl && AuthStore.authUserId) {
+        //             const { data, error } = await supabase
+        //                 .from('links')
+        //                 .insert({
+        //                     title: newTitle,
+        //                     url: newUrl,
+        //                     user_id: AuthStore.authUserId,
+        //                 })
+        //                 .select();
+        //             if (error) throw error;
+        //             console.log('New link successfully created: ', data);
+        //             if (creatorLinks) {
+        //                 setCreatorLinks([...data, ...creatorLinks]);
+        //             }
+        //             setNewTitle('');
+        //             setNewUrl('');
+        //         }
+        //     } catch (error) {
+        //         console.log('Error in creating new link: ', error);
+        //     }
+        // };
 
         // Upload Profile Picture
         const router = useRouter();
-        // const uploadProfilePicture = async (file: File) => {
-        //     try {
-        //         const { data, error } = await supabase.storage
-        //             .from('profile_picture')
-        //             .update(creatorId + '/' + 'avatar', file, {
-        //                 cacheControl: '3600',
-        //             });
-        //         if (error) {
-        //             console.error('cant update');
-        //             const { data, error } = await supabase.storage
-        //                 .from('profile_picture')
-        //                 .upload(creatorId + '/' + 'avatar', file);
-        //             if (error) {
-        //                 console.error(error);
-        //             } else {
-        //                 console.log('File uploaded successfully:', data);
-        //                 router.refresh();
-        //             }
-        //         } else {
-        //             console.log('File uploaded successfully:', data);
-        //             router.refresh();
-        //         }
-        //     } catch (error) {
-        //         console.error('uuuuu', error);
-        //     }
-        // };
 
         // Read
         const { creatorSlug } = params;
         const [profilePicture, setProfilePicture] = useState<boolean>(false);
-        const [creatorLinks, setCreatorLinks] = useState<Link[]>();
+        const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
         const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
 
         const fetchCreatorId = async () => {
@@ -275,7 +249,16 @@ const CreatorLinksPage = observer(
                             <button
                                 type="button"
                                 className="cursor rounded-md border border-transparent bg-indigo-600 px-2 py-1 text-white"
-                                onClick={addNewLink}
+                                onClick={() =>
+                                    addNewLink(
+                                        newTitle,
+                                        newUrl,
+                                        creatorLinks,
+                                        setNewTitle,
+                                        setNewUrl,
+                                        setCreatorLinks,
+                                    )
+                                }
                             >
                                 Add new link
                             </button>
