@@ -1,8 +1,7 @@
-import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from './components/Header';
 import { Outfit } from 'next/font/google';
-import Walkthrough from './components/Walkthrough';
+import { WalkthroughDialog } from './components/WalkthroughDialog';
 
 const outfit = Outfit({ subsets: ['latin'] });
 
@@ -18,7 +17,7 @@ export default function RootLayout({
                 <Header />
                 {children}
                 <div className="fixed bottom-0 mx-auto flex w-full justify-center">
-                    <Walkthrough />
+                    <WalkthroughDialog />
                 </div>
             </body>
         </html>
