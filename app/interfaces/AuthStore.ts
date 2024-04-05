@@ -1,12 +1,12 @@
-import { makeObservable, observable, action, runInAction } from "mobx";
-import supabase from "../utils/supabaseClient";
-import Cookies from "js-cookie";
+import { makeObservable, observable, action, runInAction } from 'mobx';
+import supabase from '../utils/supabaseClient';
+import Cookies from 'js-cookie';
 
 class AuthStore {
     isAuthenticated: boolean = false;
-    authUserId?: string = "";
-    authEmail?: string = "";
-    authUsername?: string = "";
+    authUserId?: string = '';
+    authEmail?: string = '';
+    authUsername?: string = '';
 
     constructor() {
         makeObservable(this, {
@@ -14,16 +14,18 @@ class AuthStore {
             authUserId: observable,
             authEmail: observable,
             authUsername: observable,
+            handleSignOut: action,
+            createUser: action,
             getAuthUser: action,
             signInWithEmail: action,
             signUpWithEmail: action,
         });
 
         // Initialize observables from cookies if they exist
-        this.isAuthenticated = Cookies.get("isAuthenticated") === "true";
-        this.authUserId = Cookies.get("authUserId") || "";
-        this.authEmail = Cookies.get("authEmail") || "";
-        this.authUsername = Cookies.get("authUsername") || "";
+        this.isAuthenticated = Cookies.get('isAuthenticated') === 'true';
+        this.authUserId = Cookies.get('authUserId') || '';
+        this.authEmail = Cookies.get('authEmail') || '';
+        this.authUsername = Cookies.get('authUsername') || '';
     }
 
     async getAuthUser() {
@@ -35,9 +37,9 @@ class AuthStore {
 
             try {
                 const { data, error } = await supabase
-                    .from("users")
-                    .select("username")
-                    .eq("id", loggedInUserId);
+                    .from('users')
+                    .select('username')
+                    .eq('id', loggedInUserId);
                 if (error) throw error;
 
                 runInAction(() => {
@@ -47,11 +49,11 @@ class AuthStore {
                     this.authUsername = data[0]?.username;
                 });
 
-                Cookies.set("authUsername", data[0]?.username);
+                Cookies.set('authUsername', data[0]?.username);
             } catch (error) {
                 console.log(
-                    "Error fetching username of logged in user: ",
-                    error
+                    'Error fetching username of logged in user: ',
+                    error,
                 );
             }
         }
@@ -73,12 +75,12 @@ class AuthStore {
                 this.getAuthUser();
                 this.authUserId = userId;
                 this.isAuthenticated = true;
-                Cookies.set("isAuthenticated", "true");
-                Cookies.set("authUserId", userId);
-                Cookies.set("authEmail", email);
+                Cookies.set('isAuthenticated', 'true');
+                Cookies.set('authUserId', userId);
+                Cookies.set('authEmail', email);
             });
         } catch (error) {
-            console.log("Login error:", error);
+            console.log('Login error:', error);
             throw error;
         }
     }
@@ -86,15 +88,15 @@ class AuthStore {
     handleSignOut = async () => {
         runInAction(() => {
             this.isAuthenticated = false;
-            this.authUserId = "";
-            this.authUsername = "";
-            this.authEmail = "";
+            this.authUserId = '';
+            this.authUsername = '';
+            this.authEmail = '';
         });
 
-        Cookies.remove("isAuthenticated");
-        Cookies.remove("authUserId");
-        Cookies.remove("authEmail");
-        Cookies.remove("authUsername");
+        Cookies.remove('isAuthenticated');
+        Cookies.remove('authUserId');
+        Cookies.remove('authEmail');
+        Cookies.remove('authUsername');
 
         await supabase.auth.signOut();
     };
@@ -112,7 +114,7 @@ class AuthStore {
                 this.getAuthUser();
             }
         } catch (error) {
-            console.log("Signup error:", error);
+            console.log('Signup error:', error);
             throw error;
         }
     }
@@ -120,14 +122,15 @@ class AuthStore {
     async createUser(userId: string, username: string) {
         try {
             const { error } = await supabase
-                .from("users")
+                .from('users')
                 .insert({ id: userId, username: username });
             if (error) throw error;
         } catch (error) {
-            console.log("Create user error: ", error);
+            console.log('Create user error: ', error);
             throw error;
         }
     }
 }
 
-export default new AuthStore();
+const authStore = new AuthStore();
+export default authStore;

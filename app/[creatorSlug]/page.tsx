@@ -34,11 +34,11 @@ const CreatorLinksPage = observer(
             if (
                 AuthStore.authUserId &&
                 creatorId &&
-                AuthStore.authUserId == creatorId
+                AuthStore.authUserId === creatorId
             ) {
                 setIsLinkOwner(true);
             }
-        }, [AuthStore.authUserId, creatorId]);
+        }, [creatorId]);
 
         // Upload Profile Picture
         const router = useRouter();
