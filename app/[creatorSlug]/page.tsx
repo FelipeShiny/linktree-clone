@@ -7,6 +7,7 @@ import LinkDropDown from '../components/LinkDropDown';
 import { observer } from 'mobx-react';
 import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
+import { uploadProfilePicture } from '../utils/profile';
 
 type Link = {
     id: number;
@@ -61,32 +62,32 @@ const CreatorLinksPage = observer(
 
         // Upload Profile Picture
         const router = useRouter();
-        const uploadProfilePicture = async (file: File) => {
-            try {
-                const { data, error } = await supabase.storage
-                    .from('profile_picture')
-                    .update(creatorId + '/' + 'avatar', file, {
-                        cacheControl: '3600',
-                    });
-                if (error) {
-                    console.error('cant update');
-                    const { data, error } = await supabase.storage
-                        .from('profile_picture')
-                        .upload(creatorId + '/' + 'avatar', file);
-                    if (error) {
-                        console.error(error);
-                    } else {
-                        console.log('File uploaded successfully:', data);
-                        router.refresh();
-                    }
-                } else {
-                    console.log('File uploaded successfully:', data);
-                    router.refresh();
-                }
-            } catch (error) {
-                console.error('uuuuu', error);
-            }
-        };
+        // const uploadProfilePicture = async (file: File) => {
+        //     try {
+        //         const { data, error } = await supabase.storage
+        //             .from('profile_picture')
+        //             .update(creatorId + '/' + 'avatar', file, {
+        //                 cacheControl: '3600',
+        //             });
+        //         if (error) {
+        //             console.error('cant update');
+        //             const { data, error } = await supabase.storage
+        //                 .from('profile_picture')
+        //                 .upload(creatorId + '/' + 'avatar', file);
+        //             if (error) {
+        //                 console.error(error);
+        //             } else {
+        //                 console.log('File uploaded successfully:', data);
+        //                 router.refresh();
+        //             }
+        //         } else {
+        //             console.log('File uploaded successfully:', data);
+        //             router.refresh();
+        //         }
+        //     } catch (error) {
+        //         console.error('uuuuu', error);
+        //     }
+        // };
 
         // Read
         const { creatorSlug } = params;
@@ -200,7 +201,7 @@ const CreatorLinksPage = observer(
                             width={0}
                             height={0}
                             sizes={'1'}
-                            className="w-48 rounded-full"
+                            className="h-48 w-48 rounded-full shadow-lg"
                             priority
                         />
                     </div>
@@ -212,7 +213,7 @@ const CreatorLinksPage = observer(
                             width={0}
                             height={0}
                             sizes={'1'}
-                            className="w-48 rounded-full border border-black"
+                            className="h-48 w-48 rounded-full shadow-lg"
                             priority
                         />
                     </div>
@@ -283,14 +284,19 @@ const CreatorLinksPage = observer(
                         <div>
                             <h2 className="pb-3 text-lg font-bold">
                                 Upload Profile Picture
+                                {creatorId}
                             </h2>
                             <input
                                 type="file"
                                 onChange={(e) => {
                                     const selectedFile =
                                         e.target.files && e.target.files[0];
-                                    if (selectedFile) {
-                                        uploadProfilePicture(selectedFile);
+                                    if (creatorId && selectedFile) {
+                                        uploadProfilePicture(
+                                            creatorId,
+                                            selectedFile,
+                                            router,
+                                        );
                                     }
                                 }}
                             />
