@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { observer } from "mobx-react";
-import AuthStore from "../interfaces/AuthStore";
-import Link from "next/link";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { observer } from 'mobx-react';
+import AuthStore from '../interfaces/AuthStore';
+import Link from 'next/link';
 
 const Login = observer(() => {
     const router = useRouter();
@@ -17,20 +17,20 @@ const Login = observer(() => {
                 await AuthStore.signInWithEmail(email, password);
 
                 if (AuthStore.isAuthenticated) {
-                    console.log("Logged in");
-                    router.push("/");
+                    console.log('Logged in');
+                    router.push('/');
                 }
             }
         } catch (error) {
-            console.log("error", error);
+            console.log('error', error);
         }
     }
 
     return (
-        <div className="flex flex-col h-screen items-center justify-center ">
-            <div className="flex flex-col gap-3 border-black rounded-xl p-10 shadow-2xl">
-                <h1 className="text-2xl">Login</h1>
-                <div className="flex flex-col items-left">
+        <div className="flex items-center justify-center py-10">
+            <div className="flex flex-col gap-3 rounded-xl border-black bg-white p-10 shadow-2xl">
+                <h2>Login</h2>
+                <div className="items-left flex flex-col">
                     <label
                         htmlFor="email"
                         className="block text-sm font-medium text-gray-700"
@@ -42,13 +42,13 @@ const Login = observer(() => {
                             type="email"
                             name="email"
                             id="email"
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                            className="block w-full rounded-md border-gray-300 bg-[#f3f3f1] shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
                             placeholder="you@example.com"
                             onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
                 </div>
-                <div className="flex flex-col items-left">
+                <div className="items-left flex flex-col">
                     <label
                         htmlFor="password"
                         className="block text-sm font-medium text-gray-700"
@@ -60,7 +60,7 @@ const Login = observer(() => {
                             type="password"
                             name="password"
                             id="password"
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
+                            className="block w-full rounded-md border-gray-300  bg-[#f3f3f1] shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
                             placeholder="password"
                             onChange={(e) => setPassword(e.target.value)}
                         />
@@ -68,25 +68,25 @@ const Login = observer(() => {
                 </div>
                 <button
                     type="button"
-                    className="bg-black text-white px-4 py-1 rounded-lg border-2 hover:bg-white hover:text-black hover:border-black"
+                    className="rounded-lg border-2 bg-[#222222] px-4 py-1 text-white hover:opacity-80"
                     onClick={signInWithEmail}
                 >
                     Login
                 </button>
                 <div className="flex items-center gap-3">
-                    <h2>Need account?</h2>
-                    <Link href={"/signup"}>
-                        <button className="border-2 border-black bg-white text-black px-4 py-1 rounded-lg hover:bg-black hover:text-white">
-                            Sign Up
+                    <h4>Need account?</h4>
+                    <Link href={'/signup'}>
+                        <button>
+                            <p>Sign Up</p>
                         </button>
                     </Link>
                 </div>
-                <div className="flex flex-col p-5 bg-black text-white rounded-xl md:mx-auto ">
-                    <h2 className="text-lg font-bold">
-                        Login Credential for test_user
-                    </h2>
-                    <p>Email: anwari.fikri@gmail.com</p>
-                    <p>Password: test_user123</p>
+                <div className="flex flex-col rounded-xl bg-[#222222] p-5 md:mx-auto ">
+                    <h5 className="font-semibold text-white">
+                        Login credentials for test_user
+                    </h5>
+                    <p className="text-white">Email: anwari.fikri@gmail.com</p>
+                    <p className="text-white">Password: test_user123</p>
                 </div>
             </div>
         </div>

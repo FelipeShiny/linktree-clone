@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import supabase from "../utils/supabaseClient";
-import { observer } from "mobx-react";
-import AuthStore from "../interfaces/AuthStore";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import React, { useState, useEffect } from 'react';
+import supabase from '../utils/supabaseClient';
+import { observer } from 'mobx-react';
+import AuthStore from '../interfaces/AuthStore';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const SignUp = observer(() => {
     const router = useRouter();
@@ -17,26 +17,26 @@ const SignUp = observer(() => {
     async function checkUsernameTaken() {
         if (username) {
             try {
-                console.log("Checking username availability for:", username);
+                console.log('Checking username availability for:', username);
                 const { data, error } = await supabase
-                    .from("users")
-                    .select("username")
-                    .eq("username", username)
+                    .from('users')
+                    .select('username')
+                    .eq('username', username)
                     .maybeSingle();
 
                 if (error) {
-                    console.error("Error:", error);
+                    console.error('Error:', error);
                     return false;
                 }
 
                 if (data) {
-                    console.log("Username already taken:", data);
+                    console.log('Username already taken:', data);
                     return true;
                 }
 
                 return false;
             } catch (error) {
-                console.error("Error checking username:", error);
+                console.error('Error checking username:', error);
                 return false;
             }
         }
@@ -48,19 +48,19 @@ const SignUp = observer(() => {
         const isUsernameTaken = await checkUsernameTaken();
 
         if (!isUsernameTaken) {
-            console.log("You can signup!");
+            console.log('You can signup!');
             try {
                 if (email && password && username) {
                     await AuthStore.signUpWithEmail(email, password, username);
-                    console.log("Sign up successful");
+                    console.log('Sign up successful');
                     router.push(`/${username}`);
                 }
             } catch (error) {
-                console.log("Signup error:", error);
+                console.log('Signup error:', error);
             }
             // Proceed with signup logic here
         } else {
-            console.log("username is taken. choose another one");
+            console.log('username is taken. choose another one');
         }
     }
 
@@ -70,10 +70,10 @@ const SignUp = observer(() => {
     // }
 
     return (
-        <div className="flex flex-col h-screen items-center justify-center ">
-            <form className="flex flex-col gap-3 border-black rounded-xl p-10 shadow-2xl">
-                <h1 className="text-2xl">Sign Up</h1>
-                <div className="flex flex-col items-left">
+        <div className="flex items-center justify-center py-10">
+            <form className="flex flex-col gap-3 rounded-xl border-black bg-white p-10 shadow-2xl">
+                <h2>Sign Up</h2>
+                <div className="items-left flex flex-col">
                     <label
                         htmlFor="username"
                         className="block text-sm font-medium text-gray-700"
@@ -92,7 +92,7 @@ const SignUp = observer(() => {
                         />
                     </div>
                 </div>
-                <div className="flex flex-col items-left">
+                <div className="items-left flex flex-col">
                     <label
                         htmlFor="email"
                         className="block text-sm font-medium text-gray-700"
@@ -111,7 +111,7 @@ const SignUp = observer(() => {
                         />
                     </div>
                 </div>
-                <div className="flex flex-col items-left">
+                <div className="items-left flex flex-col">
                     <label
                         htmlFor="password"
                         className="block text-sm font-medium text-gray-700"
@@ -131,16 +131,16 @@ const SignUp = observer(() => {
                     </div>
                 </div>
                 <button
-                    className="mt-4 bg-black text-white px-4 py-1 rounded-lg border-2 hover:bg-white hover:text-black hover:border-black"
+                    className="mt-4 rounded-lg border-2 bg-black px-4 py-1 text-white hover:border-black hover:bg-white hover:text-black"
                     onClick={signUp}
                 >
                     Sign Up
                 </button>
                 <div className="flex items-center gap-3">
-                    <h2>Already have an account?</h2>
-                    <Link href={"/login"}>
-                        <button className="border-2 border-black bg-white text-black px-4 py-1 rounded-lg hover:bg-black hover:text-white">
-                            Login
+                    <h4>Already have an account?</h4>
+                    <Link href={'/login'}>
+                        <button>
+                            <p>Login</p>
                         </button>
                     </Link>
                 </div>

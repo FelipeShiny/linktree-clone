@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { observer } from 'mobx-react';
 import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
+import { AccountDropdown } from './AccountDropdown';
 
 const Header = observer(() => {
     const router = useRouter();
-    async function signOut() {
+    async function signOut(): Promise<void> {
         try {
             await AuthStore.handleSignOut();
 
@@ -35,11 +36,7 @@ const Header = observer(() => {
             </Link>
 
             {isUserLoggedIn ? (
-                <>
-                    <div>
-                        <button onClick={signOut}>Sign Out</button>
-                    </div>
-                </>
+                <AccountDropdown signOut={() => signOut()} />
             ) : (
                 <>
                     <Link href={`/login`}>
