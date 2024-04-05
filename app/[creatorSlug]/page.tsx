@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import supabase from "../utils/supabaseClient";
-import Image from "next/image";
-import LinkDropDown from "../components/LinkDropDown";
-import { observer } from "mobx-react";
-import AuthStore from "../interfaces/AuthStore";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from 'react';
+import supabase from '../utils/supabaseClient';
+import Image from 'next/image';
+import LinkDropDown from '../components/LinkDropDown';
+import { observer } from 'mobx-react';
+import AuthStore from '../interfaces/AuthStore';
+import { useRouter } from 'next/navigation';
 
 type Link = {
     id: number;
@@ -39,7 +39,7 @@ const CreatorLinksPage = observer(
             try {
                 if (newTitle && newUrl && AuthStore.authUserId) {
                     const { data, error } = await supabase
-                        .from("links")
+                        .from('links')
                         .insert({
                             title: newTitle,
                             url: newUrl,
@@ -47,15 +47,15 @@ const CreatorLinksPage = observer(
                         })
                         .select();
                     if (error) throw error;
-                    console.log("New link successfully created: ", data);
+                    console.log('New link successfully created: ', data);
                     if (creatorLinks) {
                         setCreatorLinks([...data, ...creatorLinks]);
                     }
-                    setNewTitle("");
-                    setNewUrl("");
+                    setNewTitle('');
+                    setNewUrl('');
                 }
             } catch (error) {
-                console.log("Error in creating new link: ", error);
+                console.log('Error in creating new link: ', error);
             }
         };
 
@@ -64,27 +64,27 @@ const CreatorLinksPage = observer(
         const uploadProfilePicture = async (file: File) => {
             try {
                 const { data, error } = await supabase.storage
-                    .from("profile_picture")
-                    .update(creatorId + "/" + "avatar", file, {
-                        cacheControl: "3600",
+                    .from('profile_picture')
+                    .update(creatorId + '/' + 'avatar', file, {
+                        cacheControl: '3600',
                     });
                 if (error) {
-                    console.error("cant update");
+                    console.error('cant update');
                     const { data, error } = await supabase.storage
-                        .from("profile_picture")
-                        .upload(creatorId + "/" + "avatar", file);
+                        .from('profile_picture')
+                        .upload(creatorId + '/' + 'avatar', file);
                     if (error) {
                         console.error(error);
                     } else {
-                        console.log("File uploaded successfully:", data);
+                        console.log('File uploaded successfully:', data);
                         router.refresh();
                     }
                 } else {
-                    console.log("File uploaded successfully:", data);
+                    console.log('File uploaded successfully:', data);
                     router.refresh();
                 }
             } catch (error) {
-                console.error("uuuuu", error);
+                console.error('uuuuu', error);
             }
         };
 
@@ -99,15 +99,15 @@ const CreatorLinksPage = observer(
                 // Fetch profile picture and creator ID
                 const { data: profileData, error: profileError } =
                     await supabase
-                        .from("users")
-                        .select("id")
-                        .eq("username", creatorSlug);
+                        .from('users')
+                        .select('id')
+                        .eq('username', creatorSlug);
                 if (profileError) throw profileError;
 
                 const fetchedCreatorId = profileData[0]?.id;
                 setCreatorId(fetchedCreatorId);
             } catch (error) {
-                console.log("Error fetching profile data: ", error);
+                console.log('Error fetching profile data: ', error);
             }
         };
 
@@ -121,11 +121,11 @@ const CreatorLinksPage = observer(
             try {
                 const { data: profilePictureData, error: profileError } =
                     await supabase.storage
-                        .from("profile_picture")
-                        .list(creatorId + "/", {
+                        .from('profile_picture')
+                        .list(creatorId + '/', {
                             limit: 100,
                             offset: 0,
-                            sortBy: { column: "name", order: "asc" },
+                            sortBy: { column: 'name', order: 'asc' },
                         });
 
                 if (profilePictureData) {
@@ -147,15 +147,15 @@ const CreatorLinksPage = observer(
             try {
                 // Fetch creator links using creatorId
                 const { data: linksData, error: linksError } = await supabase
-                    .from("links")
-                    .select("id, title, url")
-                    .eq("user_id", creatorId);
+                    .from('links')
+                    .select('id, title, url')
+                    .eq('user_id', creatorId);
                 if (linksError) throw linksError;
 
                 setCreatorLinks(linksData);
                 setIsLinkLoading(false);
             } catch (error) {
-                console.log("Error fetching links data: ", error);
+                console.log('Error fetching links data: ', error);
                 setIsLinkLoading(false);
             }
         };
@@ -173,25 +173,25 @@ const CreatorLinksPage = observer(
         const deleteLink = async (linkId: number) => {
             try {
                 const { error } = await supabase
-                    .from("links")
+                    .from('links')
                     .delete()
-                    .eq("id", linkId)
+                    .eq('id', linkId)
                     .select();
                 if (error) throw error;
 
                 if (creatorLinks) {
                     const updatedLinks = creatorLinks.filter(
-                        (link) => link.id !== linkId
+                        (link) => link.id !== linkId,
                     );
                     setCreatorLinks(updatedLinks);
                 }
             } catch (error) {
-                console.log("error: ", error);
+                console.log('error: ', error);
             }
         };
 
         return (
-            <div className="px-5 py-10 flex flex-col h-min-screen gap-5 justify-center items-center">
+            <div className="h-min-screen flex flex-col items-center justify-center gap-5 px-5 py-10">
                 {creatorId && profilePicture ? (
                     <div>
                         <Image
@@ -199,7 +199,7 @@ const CreatorLinksPage = observer(
                             alt="profile_picture"
                             width={0}
                             height={0}
-                            sizes={"1"}
+                            sizes={'1'}
                             className="w-48 rounded-full"
                             priority
                         />
@@ -207,62 +207,54 @@ const CreatorLinksPage = observer(
                 ) : (
                     <div>
                         <Image
-                            src={"/assets/default-profile-picture.jpg"}
+                            src={'/assets/default-profile-picture.jpg'}
                             alt="profile_picture"
                             width={0}
                             height={0}
-                            sizes={"1"}
+                            sizes={'1'}
                             className="w-48 rounded-full border border-black"
                             priority
                         />
                     </div>
                 )}
-                <h1>@{creatorSlug}</h1>
-                <div className="flex flex-col gap-2">
+                <h3>@{creatorSlug}</h3>
+                <div className="flex w-full flex-col gap-3">
                     {isLinkLoading ? (
-                        <h1>Loading...</h1>
+                        <h4 className="text-center">Loading...</h4>
                     ) : creatorLinks && creatorLinks.length > 0 ? (
                         creatorLinks.map((link: Link, index: number) => (
-                            <div key={index} className="">
-                                <div className="p-2 bg-black text-white w-96 grid grid-cols-6 rounded-full">
-                                    <div className="col-span-1"></div>
-                                    <a
-                                        href={
-                                            link.url.startsWith("http")
+                            <div key={index}>
+                                <button
+                                    onClick={() =>
+                                        window.open(
+                                            link.url.startsWith('http')
                                                 ? link.url
-                                                : `https://${link.url}`
-                                        }
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="col-span-4 my-auto text-center"
-                                    >
-                                        <h2>{link.title}</h2>
-                                    </a>
-
-                                    {isLinkOwner && (
-                                        <div className="col-span-1">
-                                            <LinkDropDown
-                                                deleteLink={deleteLink}
-                                                link={link}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
+                                                : `https://${link.url}`,
+                                            '_blank',
+                                        )
+                                    }
+                                    rel="noopener noreferrer"
+                                    className="flex h-16 items-center justify-center rounded-full bg-[#222222] p-2 text-white hover:opacity-80"
+                                >
+                                    <p>{link.title}</p>
+                                </button>
                             </div>
                         ))
                     ) : (
-                        <h2>This creator does not have any links.</h2>
+                        <h5 className="text-center">
+                            This creator does not have any links.
+                        </h5>
                     )}
                 </div>
                 {isLinkOwner && (
                     <>
-                        <div className="border flex flex-col items-center gap-2 p-2 bg-grey-100 rounded-lg">
+                        <div className="bg-grey-100 flex flex-col items-center gap-2 rounded-lg border p-2">
                             <div className="mt-1 flex gap-2">
                                 <input
                                     type="text"
                                     name="title"
                                     id="title"
-                                    value={newTitle || ""}
+                                    value={newTitle || ''}
                                     className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
                                     placeholder="Title"
                                     onChange={(e) =>
@@ -273,7 +265,7 @@ const CreatorLinksPage = observer(
                                     type="text"
                                     name="url"
                                     id="url"
-                                    value={newUrl || ""}
+                                    value={newUrl || ''}
                                     className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
                                     placeholder="URL"
                                     onChange={(e) => setNewUrl(e.target.value)}
@@ -281,7 +273,7 @@ const CreatorLinksPage = observer(
                             </div>
                             <button
                                 type="button"
-                                className="rounded-md border border-transparent bg-indigo-600 text-white cursor px-2 py-1"
+                                className="cursor rounded-md border border-transparent bg-indigo-600 px-2 py-1 text-white"
                                 onClick={addNewLink}
                             >
                                 Add new link
@@ -289,7 +281,7 @@ const CreatorLinksPage = observer(
                         </div>
 
                         <div>
-                            <h2 className="font-bold text-lg pb-3">
+                            <h2 className="pb-3 text-lg font-bold">
                                 Upload Profile Picture
                             </h2>
                             <input
@@ -307,7 +299,7 @@ const CreatorLinksPage = observer(
                 )}
             </div>
         );
-    }
+    },
 );
 
 export default CreatorLinksPage;

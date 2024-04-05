@@ -92,7 +92,7 @@
     }
 
     h3 {
-        @apply text-2xl sm:text-3xl text-[#64B4F0];
+        @apply text-2xl sm:text-3xl;
     }
 
     h4 {
