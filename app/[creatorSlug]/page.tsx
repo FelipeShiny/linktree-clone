@@ -7,7 +7,13 @@ import LinkDropDown from '../components/LinkDropDown';
 import { observer } from 'mobx-react';
 import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
-import { addNewLink, uploadProfilePicture } from '../utils/profile';
+import {
+    addNewLink,
+    fetchCreatorId,
+    fetchLinks,
+    fetchProfilePicture,
+    uploadProfilePicture,
+} from '../utils/profile';
 
 type Link = {
     id: number;
@@ -18,8 +24,6 @@ type Link = {
 const CreatorLinksPage = observer(
     ({ params }: { params: { creatorSlug: string } }) => {
         const [isLinkOwner, setIsLinkOwner] = useState<boolean>(false);
-
-        // CRUD
 
         // Create
         const [newTitle, setNewTitle] = useState<string>('');
@@ -36,30 +40,6 @@ const CreatorLinksPage = observer(
             }
         }, [AuthStore.authUserId, creatorId]);
 
-        // const addNewLink = async () => {
-        //     try {
-        //         if (newTitle && newUrl && AuthStore.authUserId) {
-        //             const { data, error } = await supabase
-        //                 .from('links')
-        //                 .insert({
-        //                     title: newTitle,
-        //                     url: newUrl,
-        //                     user_id: AuthStore.authUserId,
-        //                 })
-        //                 .select();
-        //             if (error) throw error;
-        //             console.log('New link successfully created: ', data);
-        //             if (creatorLinks) {
-        //                 setCreatorLinks([...data, ...creatorLinks]);
-        //             }
-        //             setNewTitle('');
-        //             setNewUrl('');
-        //         }
-        //     } catch (error) {
-        //         console.log('Error in creating new link: ', error);
-        //     }
-        // };
-
         // Upload Profile Picture
         const router = useRouter();
 
@@ -69,102 +49,22 @@ const CreatorLinksPage = observer(
         const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
         const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
 
-        const fetchCreatorId = async () => {
-            try {
-                // Fetch profile picture and creator ID
-                const { data: profileData, error: profileError } =
-                    await supabase
-                        .from('users')
-                        .select('id')
-                        .eq('username', creatorSlug);
-                if (profileError) throw profileError;
-
-                const fetchedCreatorId = profileData[0]?.id;
-                setCreatorId(fetchedCreatorId);
-            } catch (error) {
-                console.log('Error fetching profile data: ', error);
-            }
-        };
-
         useEffect(() => {
             if (creatorSlug) {
-                fetchCreatorId();
+                fetchCreatorId(creatorSlug, setCreatorId);
             }
         }, [creatorSlug]);
-
-        const fetchProfilePicture = async () => {
-            try {
-                const { data: profilePictureData, error: profileError } =
-                    await supabase.storage
-                        .from('profile_picture')
-                        .list(creatorId + '/', {
-                            limit: 100,
-                            offset: 0,
-                            sortBy: { column: 'name', order: 'asc' },
-                        });
-
-                if (profilePictureData) {
-                    console.log(profilePictureData[0].name);
-                    setProfilePicture(true);
-                }
-            } catch (error) {
-                // Handle errors here
-            }
-        };
-
-        useEffect(() => {
-            if (creatorSlug) {
-                fetchProfilePicture();
-            }
-        }, [creatorSlug]);
-
-        const fetchLinks = async () => {
-            try {
-                // Fetch creator links using creatorId
-                const { data: linksData, error: linksError } = await supabase
-                    .from('links')
-                    .select('id, title, url')
-                    .eq('user_id', creatorId);
-                if (linksError) throw linksError;
-
-                setCreatorLinks(linksData);
-                setIsLinkLoading(false);
-            } catch (error) {
-                console.log('Error fetching links data: ', error);
-                setIsLinkLoading(false);
-            }
-        };
 
         useEffect(() => {
             if (creatorId) {
-                fetchLinks();
-                fetchProfilePicture();
+                fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
+                fetchProfilePicture(creatorId, setProfilePicture);
             }
         }, [creatorId]);
 
         // Update
 
         // Delete
-        const deleteLink = async (linkId: number) => {
-            try {
-                const { error } = await supabase
-                    .from('links')
-                    .delete()
-                    .eq('id', linkId)
-                    .select();
-                if (error) throw error;
-
-                if (creatorLinks) {
-                    const updatedLinks = creatorLinks.filter(
-                        (link) => link.id !== linkId,
-                    );
-                    setCreatorLinks(updatedLinks);
-                }
-            } catch (error) {
-                console.log('error: ', error);
-            }
-        };
-
         return (
             <div className="h-min-screen flex flex-col items-center justify-center gap-5 px-5 py-10">
                 {creatorId && profilePicture ? (

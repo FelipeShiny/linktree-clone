@@ -63,3 +63,88 @@ export const uploadProfilePicture = async (
         console.error('uuuuu', error);
     }
 };
+
+export const fetchCreatorId = async (
+    creatorSlug: string,
+    setCreatorId: React.Dispatch<React.SetStateAction<string>>,
+) => {
+    try {
+        // Fetch profile picture and creator ID
+        const { data: profileData, error: profileError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('username', creatorSlug);
+        if (profileError) throw profileError;
+
+        const fetchedCreatorId = profileData[0]?.id;
+        setCreatorId(fetchedCreatorId);
+    } catch (error) {
+        console.log('Error fetching profile data: ', error);
+    }
+};
+
+export const fetchLinks = async (
+    creatorId: string,
+    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>,
+    setIsLinkLoading: React.Dispatch<React.SetStateAction<boolean>>,
+) => {
+    try {
+        // Fetch creator links using creatorId
+        const { data: linksData, error: linksError } = await supabase
+            .from('links')
+            .select('id, title, url')
+            .eq('user_id', creatorId);
+        if (linksError) throw linksError;
+
+        setCreatorLinks(linksData);
+        setIsLinkLoading(false);
+    } catch (error) {
+        console.log('Error fetching links data: ', error);
+        setIsLinkLoading(false);
+    }
+};
+
+export const fetchProfilePicture = async (
+    creatorId: string,
+    setProfilePicture: React.Dispatch<React.SetStateAction<boolean>>,
+) => {
+    try {
+        const { data: profilePictureData } = await supabase.storage
+            .from('profile_picture')
+            .list(creatorId + '/', {
+                limit: 100,
+                offset: 0,
+                sortBy: { column: 'name', order: 'asc' },
+            });
+
+        if (profilePictureData) {
+            setProfilePicture(true);
+        }
+    } catch (error) {
+        // Handle errors here
+    }
+};
+
+export const deleteLink = async (
+    creatorLinks: Link[],
+    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>,
+    linkId: number,
+) => {
+    try {
+        const { error } = await supabase
+            .from('links')
+            .delete()
+            .eq('id', linkId)
+            .select();
+        if (error) throw error;
+
+        if (creatorLinks) {
+            const updatedLinks = creatorLinks.filter(
+                (link) => link.id !== linkId,
+            );
+            setCreatorLinks(updatedLinks);
+        }
+    } catch (error) {
+        console.log('error: ', error);
+    }
+};
