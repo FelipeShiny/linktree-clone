@@ -27,6 +27,7 @@ const Admin = () => {
 
     // check authentication
     const router = useRouter();
+
     useEffect(() => {
         if (AuthStore.authUserId) {
             setIsAuthenticated(true);
@@ -35,7 +36,7 @@ const Admin = () => {
         } else {
             router.push('/login');
         }
-    }, [creatorId]);
+    }, []);
 
     // Fetch links and profile picture
     useEffect(() => {

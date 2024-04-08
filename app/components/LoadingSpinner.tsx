@@ -5,7 +5,7 @@ const LoadingSpinner = () => {
         <div role="status">
             <svg
                 aria-hidden="true"
-                className="mr-2 h-8 w-8 animate-spin fill-[#F79FBB] dark:text-[#343680]"
+                className="mr-2 h-8 w-8 animate-spin fill-[#8129D9] dark:text-[#222222]"
                 viewBox="0 0 100 101"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
