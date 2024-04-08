@@ -18,7 +18,7 @@ const Login = observer(() => {
 
                 if (AuthStore.isAuthenticated) {
                     console.log('Logged in');
-                    router.push('/');
+                    router.push('/admin');
                 }
             }
         } catch (error) {
