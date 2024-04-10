@@ -20,9 +20,9 @@ const EnterUrl = ({
     return (
         <div className="flex w-full flex-col gap-6 rounded-2xl border bg-white p-2 px-6 py-9 shadow">
             <h2>Enter URL</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
                 <input
-                    className="rounded-xl bg-[#f3f3f1]"
+                    className="w-full rounded-xl bg-[#f3f3f1]"
                     type="text"
                     name="url"
                     id="url"

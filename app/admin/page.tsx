@@ -16,6 +16,7 @@ import { Link } from '../types/linkTypes';
 import { Eye, GripVertical, Pencil, ToggleLeft, Trash } from 'lucide-react';
 import NextLink from 'next/link';
 import EnterUrl from '../components/EnterUrl';
+import EditableLinkItem from '../components/EditableLinkItem';
 
 const Admin = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -55,26 +56,6 @@ const Admin = () => {
     const [newTitle, setNewTitle] = useState<string>('');
     const [newUrl, setNewUrl] = useState<string>('');
 
-    const CharacterLimitedText = ({
-        text,
-        limit,
-    }: {
-        text: string;
-        limit: number;
-    }) => {
-        const [truncatedText, setTruncatedText] = useState(text);
-
-        useEffect(() => {
-            if (text.length > limit) {
-                setTruncatedText(text.slice(0, limit) + '...');
-            } else {
-                setTruncatedText(text);
-            }
-        }, [text, limit]);
-
-        return truncatedText;
-    };
-
     return (
         isAuthenticated && (
             <div className="h-min-screen flex flex-col items-center justify-center gap-5 px-5 py-10">
@@ -101,33 +82,12 @@ const Admin = () => {
                         setCreatorLinks={setCreatorLinks}
                     />
                 )}
-                <div className="flex w-full items-center justify-between gap-6 rounded-2xl border bg-white p-2 px-6 py-9 shadow">
-                    <GripVertical />
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                            <h6>
-                                <CharacterLimitedText
-                                    text="Instagram"
-                                    limit={26}
-                                />
-                            </h6>
-                            <Pencil className="w-4" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <small>
-                                <CharacterLimitedText
-                                    text="https://www.instagram.com/emokoooooooooooooooo"
-                                    limit={30}
-                                />
-                            </small>
-                            <Pencil className="w-4" />
-                        </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                        <ToggleLeft />
-                        <Trash className="w-4" />
-                    </div>
-                </div>
+                {creatorLinks
+                    .filter((link: Link) => link.show === true)
+                    .map((link: Link, index: number) => (
+                        <EditableLinkItem key={index} link={link} />
+                    ))}
+
                 {/* <CreatorLinks
                     isLinkLoading={isLinkLoading}
                     creatorLinks={creatorLinks}

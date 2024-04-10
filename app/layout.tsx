@@ -12,8 +12,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body className={outfit.className}>
-                {/* <script src="../path/to/flowbite/dist/flowbite.min.js"></script> */}
+            <body className={`${outfit.className} pb-24`}>
                 <Header />
                 {children}
                 <div className="fixed bottom-0 mx-auto flex w-full justify-center">

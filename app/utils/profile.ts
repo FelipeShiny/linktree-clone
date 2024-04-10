@@ -92,7 +92,7 @@ export const fetchLinks = async (
         // Fetch creator links using creatorId
         const { data: linksData, error: linksError } = await supabase
             .from('links')
-            .select('id, title, url')
+            .select('id, title, url, show')
             .eq('user_id', creatorId);
         if (linksError) throw linksError;
 
@@ -125,11 +125,19 @@ export const fetchProfilePicture = async (
     }
 };
 
-export const deleteLink = async (
-    creatorLinks: Link[],
-    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>,
-    linkId: number,
-) => {
+export const updateLinkTitle = async (linkId: number, newTitle: string) => {
+    try {
+        const { error } = await supabase
+            .from('links')
+            .update({ title: newTitle })
+            .eq('id', linkId);
+        if (error) throw error;
+    } catch (error) {
+        console.log('error: ', error);
+    }
+};
+
+export const deleteLink = async (linkId: number) => {
     try {
         const { error } = await supabase
             .from('links')
@@ -137,13 +145,6 @@ export const deleteLink = async (
             .eq('id', linkId)
             .select();
         if (error) throw error;
-
-        if (creatorLinks) {
-            const updatedLinks = creatorLinks.filter(
-                (link) => link.id !== linkId,
-            );
-            setCreatorLinks(updatedLinks);
-        }
     } catch (error) {
         console.log('error: ', error);
     }
