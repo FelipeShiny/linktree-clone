@@ -38,19 +38,33 @@ const EnterUrl = ({
                     onClick={(e) => {
                         e.preventDefault();
 
-                        const url = new URL(newUrl);
-                        const newTitle = url.hostname;
-                        setNewTitle(newTitle);
+                        let formattedUrl = newUrl.trim();
+                        if (
+                            !formattedUrl.startsWith('http://') &&
+                            !formattedUrl.startsWith('https://')
+                        ) {
+                            formattedUrl = 'https://' + formattedUrl; // Add protocol if missing
+                        }
 
-                        addNewLink(
-                            newTitle,
-                            newUrl,
-                            creatorLinks,
-                            setNewTitle,
-                            setNewUrl,
-                            setCreatorLinks,
-                        );
-                        location.reload();
+                        try {
+                            const url = new URL(formattedUrl);
+                            const hostname = url.hostname.replace(/^www\./, ''); // Remove 'www.' if present
+                            const newTitle = hostname || 'Untitled';
+
+                            setNewTitle(newTitle);
+                            addNewLink(
+                                newTitle,
+                                formattedUrl,
+                                creatorLinks,
+                                setNewTitle,
+                                setNewUrl,
+                                setCreatorLinks,
+                            );
+                            // location.reload();
+                        } catch (error: any) {
+                            console.error('Invalid URL:', error.message);
+                            // Handle invalid URL error here, e.g., show an error message to the user
+                        }
                     }}
                 >
                     <p>Add</p>

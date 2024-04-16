@@ -88,9 +88,12 @@ const EditableLinkItem = ({ link }: { link: Link }) => {
                         )}
                         {isEditing ? (
                             <div className="flex gap-2 pr-2">
-                                <X className="w-4" onClick={handleEditToggle} />
+                                <X
+                                    className="w-4 cursor-pointer"
+                                    onClick={handleEditToggle}
+                                />
                                 <Check
-                                    className="w-4"
+                                    className="w-4 cursor-pointer"
                                     onClick={handleEditConfirm}
                                 />
                             </div>

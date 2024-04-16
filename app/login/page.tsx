@@ -17,8 +17,7 @@ const Login = observer(() => {
         if (AuthStore.isAuthenticated) {
             router.push('/admin');
         }
-    }, []);
-    // DON'T ADD ROUTER (infinite call)
+    }, [router]);
 
     async function signInWithEmail(e: any) {
         e.preventDefault();

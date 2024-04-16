@@ -37,8 +37,7 @@ const Admin = () => {
         } else {
             router.push('/login');
         }
-    }, []);
-    // DON'T ADD ROUTER (infinite call)
+    }, [router]);
 
     // Fetch links and profile picture
     const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
@@ -47,7 +46,8 @@ const Admin = () => {
             fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
             fetchProfilePicture(creatorId, setProfilePicture);
         }
-    }, [creatorId, creatorLinks]);
+    }, [creatorId]);
+    // DON'T ADD creatorLinks (infinite call)
 
     // Upload Profile Picture
     const [profilePicture, setProfilePicture] = useState<boolean>(false);
