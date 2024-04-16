@@ -137,6 +137,18 @@ export const updateLinkTitle = async (linkId: number, newTitle: string) => {
     }
 };
 
+export const updateLinkUrl = async (urlId: number, newUrl: string) => {
+    try {
+        const { error } = await supabase
+            .from('links')
+            .update({ url: newUrl })
+            .eq('id', urlId);
+        if (error) throw error;
+    } catch (error) {
+        console.log('error: ', error);
+    }
+};
+
 export const deleteLink = async (linkId: number) => {
     try {
         const { error } = await supabase
