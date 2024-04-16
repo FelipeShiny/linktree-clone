@@ -32,7 +32,7 @@ export function DeleteLinkButton({ linkId }: { linkId: number }) {
             ) : (
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Trash className="w-4" />
+                        <Trash className="w-4 cursor-pointer" />
                     </DialogTrigger>
                     <DialogContent className="bg-white sm:max-w-[425px]">
                         <DialogHeader>
@@ -46,7 +46,7 @@ export function DeleteLinkButton({ linkId }: { linkId: number }) {
                         <DialogFooter className="flex flex-col gap-2">
                             <DialogClose asChild>
                                 <Button type="button">
-                                    <p>No, I don't want to delete</p>
+                                    <p>No, I don&apos;t want to delete</p>
                                 </Button>
                             </DialogClose>
                             <DialogClose asChild>

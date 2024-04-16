@@ -50,7 +50,7 @@ export function AccountDropdown({ signOut }: { signOut: any }) {
                     <Link href={'/admin'}>
                         <DropdownMenuItem>
                             <User className="mr-2 h-4 w-4" />
-                            <span>Profile</span>
+                            <span>Your Page</span>
                         </DropdownMenuItem>
                     </Link>
                 </DropdownMenuGroup>

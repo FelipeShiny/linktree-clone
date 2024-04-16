@@ -20,7 +20,7 @@ const EnterUrl = ({
     return (
         <div className="flex w-full flex-col gap-6 rounded-2xl border bg-white p-2 px-6 py-9 shadow">
             <h2>Enter URL</h2>
-            <div className="flex items-center justify-between gap-2">
+            <form className="flex items-center justify-between gap-2">
                 <input
                     className="w-full rounded-xl bg-[#f3f3f1]"
                     type="text"
@@ -33,9 +33,11 @@ const EnterUrl = ({
                     }}
                 />
                 <button
-                    type="button"
+                    type="submit"
                     className="cursor w-14 rounded-xl"
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.preventDefault();
+
                         const url = new URL(newUrl);
                         const newTitle = url.hostname;
                         setNewTitle(newTitle);
@@ -48,11 +50,12 @@ const EnterUrl = ({
                             setNewUrl,
                             setCreatorLinks,
                         );
+                        location.reload();
                     }}
                 >
                     <p>Add</p>
                 </button>
-            </div>
+            </form>
         </div>
     );
 };

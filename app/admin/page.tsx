@@ -37,19 +37,19 @@ const Admin = () => {
         } else {
             router.push('/login');
         }
-    }, []);
+    }, [router]);
 
     // Fetch links and profile picture
+    const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
     useEffect(() => {
         if (creatorId) {
             fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
             fetchProfilePicture(creatorId, setProfilePicture);
         }
-    }, [creatorId]);
+    }, [creatorId, creatorLinks]);
 
     // Upload Profile Picture
     const [profilePicture, setProfilePicture] = useState<boolean>(false);
-    const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
     const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
 
     // Create

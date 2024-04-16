@@ -16,7 +16,7 @@ export function WalkthroughDialog() {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <div className="flex w-44 flex-col items-center gap-1 rounded-t-3xl bg-[#8129D9] p-6 text-white">
+                <div className="flex w-44 cursor-pointer flex-col items-center gap-1 rounded-t-3xl bg-[#8129D9] p-6 text-white">
                     <ChevronsUp />
                     <h4 className="text-white">Walkthrough</h4>
                 </div>

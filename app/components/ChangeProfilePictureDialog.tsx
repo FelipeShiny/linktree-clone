@@ -29,7 +29,7 @@ export function ChangeProfilePictureDialog({
             <DialogTrigger asChild>
                 <div className="cursor absolute bottom-0 right-0 flex justify-end ">
                     <div className="rounded-full bg-white p-2 shadow-lg">
-                        <Pencil className="h-6 w-6" />
+                        <Pencil className="h-6 w-6 cursor-pointer" />
                     </div>
                 </div>
             </DialogTrigger>

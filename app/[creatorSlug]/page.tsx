@@ -9,12 +9,7 @@ import {
 } from '../utils/profile';
 import ProfilePicture from '../components/ProfilePicture';
 import CreatorLinks from '../components/CreatorLinks';
-
-type Link = {
-    id: number;
-    title: string;
-    url: string;
-};
+import { Link } from '../types/linkTypes';
 
 const CreatorLinksPage = observer(
     ({ params }: { params: { creatorSlug: string } }) => {

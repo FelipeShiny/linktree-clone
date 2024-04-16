@@ -96,7 +96,7 @@ const EditableLinkItem = ({ link }: { link: Link }) => {
                             </div>
                         ) : (
                             <Pencil
-                                className="w-4"
+                                className="w-4 cursor-pointer"
                                 onClick={handleEditToggle}
                             />
                         )}
@@ -121,7 +121,7 @@ const EditableLinkItem = ({ link }: { link: Link }) => {
                 </div>
             </div>
             {!!!isEditing && (
-                <div className="flex basis-1/6 gap-2">
+                <div className="flex basis-1/6 justify-end gap-2">
                     {link.show ? <ToggleRight /> : <ToggleLeft />}
                     <DeleteLinkButton linkId={link.id} />
                 </div>
