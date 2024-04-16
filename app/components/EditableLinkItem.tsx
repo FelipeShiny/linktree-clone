@@ -8,7 +8,11 @@ import {
     X,
 } from 'lucide-react';
 import { Link } from '../types/linkTypes';
-import { updateLinkTitle, updateLinkUrl } from '../utils/profile';
+import {
+    updateLinkTitle,
+    updateLinkUrl,
+    updateShowLink,
+} from '../utils/profile';
 import { DeleteLinkButton } from './DeleteLinkButton';
 
 const EditableLinkItem = ({ link }: { link: Link }) => {
@@ -17,6 +21,12 @@ const EditableLinkItem = ({ link }: { link: Link }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editableUrl, setEditableUrl] = useState(link.url);
     const [preSubmittedUrl, setPreSubmittedUrl] = useState(link.url);
+    const [isShow, setIsShow] = useState(link.show);
+
+    const handleShow = () => {
+        setIsShow(!isShow);
+        updateShowLink(link.id);
+    };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableTitle(e.target.value);
@@ -125,7 +135,17 @@ const EditableLinkItem = ({ link }: { link: Link }) => {
             </div>
             {!!!isEditing && (
                 <div className="flex basis-1/6 justify-end gap-2">
-                    {/* {link.show ? <ToggleRight /> : <ToggleLeft />} */}
+                    {isShow ? (
+                        <ToggleRight
+                            className="cursor-pointer text-[#8129D9]"
+                            onClick={handleShow}
+                        />
+                    ) : (
+                        <ToggleLeft
+                            className="cursor-pointer text-slate-600"
+                            onClick={handleShow}
+                        />
+                    )}
                     <DeleteLinkButton linkId={link.id} />
                 </div>
             )}

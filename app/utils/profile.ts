@@ -156,6 +156,35 @@ export const updateLinkUrl = async (urlId: number, newUrl: string) => {
     }
 };
 
+export const updateShowLink = async (linkId: number) => {
+    try {
+        const { data: linkData, error: fetchError } = await supabase
+            .from('links')
+            .select('show')
+            .eq('id', linkId)
+            .single();
+
+        if (fetchError) {
+            throw fetchError;
+        }
+
+        const currentShowValue = linkData?.show;
+
+        const { error: updateError } = await supabase
+            .from('links')
+            .update({ show: !currentShowValue })
+            .eq('id', linkId);
+
+        if (updateError) {
+            throw updateError;
+        }
+
+        console.log('Show state of link updated successfully.');
+    } catch (error) {
+        console.log('Could not change state of show: ', error);
+    }
+};
+
 export const deleteLink = async (linkId: number) => {
     try {
         const { error } = await supabase

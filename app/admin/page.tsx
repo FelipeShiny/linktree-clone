@@ -76,11 +76,9 @@ const Admin = () => {
                         setCreatorLinks={setCreatorLinks}
                     />
                 )}
-                {creatorLinks
-                    .filter((link: Link) => link.show === true)
-                    .map((link: Link, index: number) => (
-                        <EditableLinkItem key={index} link={link} />
-                    ))}
+                {creatorLinks.map((link: Link, index: number) => (
+                    <EditableLinkItem key={index} link={link} />
+                ))}
             </div>
         )
     );
