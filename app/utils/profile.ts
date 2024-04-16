@@ -119,14 +119,14 @@ export const fetchProfilePicture = async (
         const { data: profilePictureData } = await supabase.storage
             .from('profile_picture')
             .list(creatorId + '/', {
-                limit: 100,
+                limit: 1,
                 offset: 0,
                 sortBy: { column: 'name', order: 'asc' },
             });
-
-        if (profilePictureData) {
-            setProfilePicture(true);
+        if (!profilePictureData || profilePictureData.length === 0) {
+            throw new Error('No profile picture data found.');
         }
+        setProfilePicture(true);
     } catch (error) {
         console.log('Failed to fetch profile picture: ', error);
     }
