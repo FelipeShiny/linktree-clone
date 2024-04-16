@@ -11,7 +11,11 @@ export const addNewLink = async (
     setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>,
 ) => {
     try {
-        if (newTitle && newUrl && AuthStore.authUserId) {
+        if (
+            newTitle.trim() !== '' &&
+            newUrl.trim() !== '' &&
+            AuthStore.authUserId
+        ) {
             const { data, error } = await supabase
                 .from('links')
                 .insert({
@@ -20,13 +24,16 @@ export const addNewLink = async (
                     user_id: AuthStore.authUserId,
                 })
                 .select();
-            if (error) throw error;
+            if (error)
+                throw new Error(`Error inserting link: ${error.message}`);
             console.log('New link successfully created: ', data);
             if (creatorLinks) {
-                setCreatorLinks([...data, ...creatorLinks]);
+                setCreatorLinks([...creatorLinks, ...data]);
             }
             setNewTitle('');
             setNewUrl('');
+        } else {
+            throw new Error('Title, URL, or user ID is missing or invalid.');
         }
     } catch (error) {
         console.log('Error in creating new link: ', error);
@@ -121,7 +128,7 @@ export const fetchProfilePicture = async (
             setProfilePicture(true);
         }
     } catch (error) {
-        // Handle errors here
+        console.log('Failed to fetch profile picture: ', error);
     }
 };
 

@@ -4,16 +4,9 @@ import React, { useState, useEffect } from 'react';
 import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
 import ProfilePicture from '../components/ProfilePicture';
-import CreatorLinks from '../components/CreatorLinks';
-import {
-    addNewLink,
-    fetchCreatorId,
-    fetchLinks,
-    fetchProfilePicture,
-    uploadProfilePicture,
-} from '../utils/profile';
+import { fetchLinks, fetchProfilePicture } from '../utils/profile';
 import { Link } from '../types/linkTypes';
-import { Eye, GripVertical, Pencil, ToggleLeft, Trash } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import NextLink from 'next/link';
 import EnterUrl from '../components/EnterUrl';
 import EditableLinkItem from '../components/EditableLinkItem';
@@ -88,11 +81,6 @@ const Admin = () => {
                     .map((link: Link, index: number) => (
                         <EditableLinkItem key={index} link={link} />
                     ))}
-
-                {/* <CreatorLinks
-                    isLinkLoading={isLinkLoading}
-                    creatorLinks={creatorLinks}
-                /> */}
             </div>
         )
     );
