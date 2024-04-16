@@ -122,7 +122,7 @@ const EditableLinkItem = ({ link }: { link: Link }) => {
             </div>
             {!!!isEditing && (
                 <div className="flex basis-1/6 justify-end gap-2">
-                    {link.show ? <ToggleRight /> : <ToggleLeft />}
+                    {/* {link.show ? <ToggleRight /> : <ToggleLeft />} */}
                     <DeleteLinkButton linkId={link.id} />
                 </div>
             )}

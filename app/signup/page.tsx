@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import supabase from '../utils/supabaseClient';
 import { observer } from 'mobx-react';
 import AuthStore from '../interfaces/AuthStore';

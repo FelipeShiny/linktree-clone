@@ -37,7 +37,8 @@ const Admin = () => {
         } else {
             router.push('/login');
         }
-    }, [router]);
+    }, []);
+    // DON'T ADD ROUTER (infinite call)
 
     // Fetch links and profile picture
     const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);

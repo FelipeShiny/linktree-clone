@@ -1,4 +1,3 @@
-import { Pencil } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
 import { ChangeProfilePictureDialog } from './ChangeProfilePictureDialog';
@@ -22,7 +21,7 @@ const ProfilePicture = ({
                         width={0}
                         height={0}
                         sizes={'1'}
-                        className="h-48 w-48 rounded-full shadow-lg"
+                        className="h-48 w-48 rounded-full object-cover shadow-lg"
                         priority
                     />
                 ) : (
@@ -32,7 +31,7 @@ const ProfilePicture = ({
                         width={0}
                         height={0}
                         sizes={'1'}
-                        className="h-48 w-48 rounded-full shadow-lg"
+                        className="h-48 w-48 rounded-full object-cover shadow-lg"
                         priority
                     />
                 )}
