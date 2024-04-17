@@ -16,7 +16,7 @@ const CreatorLinksPage = observer(
         const [creatorId, setCreatorId] = useState<string>('');
 
         const { creatorSlug } = params;
-        const [profilePicture, setProfilePicture] = useState<boolean>(false);
+        const [profilePicture, setProfilePicture] = useState<string>('');
         const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
         const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
 
@@ -38,6 +38,7 @@ const CreatorLinksPage = observer(
                 <ProfilePicture
                     creatorId={creatorId}
                     profilePicture={profilePicture}
+                    setProfilePicture={setProfilePicture}
                 />
                 <h3>@{creatorSlug}</h3>
                 <CreatorLinks

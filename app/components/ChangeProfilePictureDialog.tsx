@@ -17,9 +17,11 @@ import { useState } from 'react';
 export function ChangeProfilePictureDialog({
     creatorId,
     router,
+    setProfilePicture,
 }: {
     creatorId: string;
     router: any;
+    setProfilePicture: React.Dispatch<React.SetStateAction<string>>;
 }) {
     const [selectedFile, setSelectedFile] = useState<File | undefined>(
         undefined,
@@ -60,22 +62,23 @@ export function ChangeProfilePictureDialog({
                             }}
                         />
                         {selectedFile && (
-                            <DialogClose>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (creatorId && selectedFile) {
-                                            uploadProfilePicture(
-                                                creatorId,
-                                                selectedFile,
-                                                router,
-                                            );
-                                        }
-                                        setSelectedFile(undefined);
-                                    }}
-                                >
-                                    <p>Submit</p>
-                                </button>
+                            <DialogClose
+                                type="submit"
+                                onClick={() => {
+                                    if (creatorId && selectedFile) {
+                                        uploadProfilePicture(
+                                            creatorId,
+                                            selectedFile,
+                                            router,
+                                        );
+                                    }
+                                    setSelectedFile(undefined);
+                                    setProfilePicture(
+                                        `https://dpehbxmmipfxwdjjmuog.supabase.co/storage/v1/object/public/profile_picture/${creatorId}/avatar?nocache=${Date.now()}`,
+                                    );
+                                }}
+                            >
+                                <p>Submit</p>
                             </DialogClose>
                         )}
                     </div>

@@ -32,9 +32,8 @@ const Admin = () => {
         }
     }, [router]);
 
-    // Fetch links and profile picture
     const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
-    const [profilePicture, setProfilePicture] = useState<boolean>(false);
+    const [profilePicture, setProfilePicture] = useState<string>('');
     useEffect(() => {
         if (creatorId) {
             fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
@@ -43,7 +42,6 @@ const Admin = () => {
     }, [creatorId]);
     // DON'T ADD creatorLinks (infinite call)
 
-    // Upload Profile Picture
     const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
 
     // Create
@@ -56,6 +54,7 @@ const Admin = () => {
                 <ProfilePicture
                     creatorId={creatorId}
                     profilePicture={profilePicture}
+                    setProfilePicture={setProfilePicture}
                     router={router}
                 />
 

@@ -46,28 +46,46 @@ export const uploadProfilePicture = async (
     router: any,
 ) => {
     try {
-        const { data, error } = await supabase.storage
+        const maxSizeMB = 5;
+        const maxSizeBytes = maxSizeMB * 1024 * 1024; // Convert megabytes to bytes
+        if (file.size > maxSizeBytes) {
+            throw new Error(
+                `File size exceeds the maximum limit of ${maxSizeMB} MB`,
+            );
+        }
+
+        const { data: updateData, error: updateError } = await supabase.storage
             .from('profile_picture')
-            .update(creatorId + '/' + 'avatar', file, {
+            .update(creatorId + '/avatar', file, {
                 cacheControl: '3600',
             });
-        if (error) {
-            console.error('cant update');
-            const { data, error } = await supabase.storage
-                .from('profile_picture')
-                .upload(creatorId + '/' + 'avatar', file);
-            if (error) {
-                console.error(error);
+
+        if (updateError) {
+            console.error(
+                'Failed to update profile picture:',
+                updateError.message,
+            );
+
+            const { data: uploadData, error: uploadError } =
+                await supabase.storage
+                    .from('profile_picture')
+                    .upload(creatorId + '/avatar', file);
+
+            if (uploadError) {
+                console.error(
+                    'Failed to upload profile picture:',
+                    uploadError.message,
+                );
             } else {
-                console.log('File uploaded successfully:', data);
-                router.refresh();
+                console.log('File uploaded successfully:', uploadData);
+                location.reload();
             }
         } else {
-            console.log('File uploaded successfully:', data);
-            router.refresh();
+            console.log('Profile picture updated successfully:', updateData);
+            location.reload();
         }
     } catch (error) {
-        console.error('uuuuu', error);
+        console.error('Failed to upload profile picture:', error);
     }
 };
 
@@ -113,7 +131,7 @@ export const fetchLinks = async (
 
 export const fetchProfilePicture = async (
     creatorId: string,
-    setProfilePicture: React.Dispatch<React.SetStateAction<boolean>>,
+    setProfilePicture: React.Dispatch<React.SetStateAction<string>>,
 ) => {
     try {
         const { data: profilePictureData } = await supabase.storage
@@ -126,9 +144,11 @@ export const fetchProfilePicture = async (
         if (!profilePictureData || profilePictureData.length === 0) {
             throw new Error('No profile picture data found.');
         }
-        setProfilePicture(true);
+        setProfilePicture(
+            `https://dpehbxmmipfxwdjjmuog.supabase.co/storage/v1/object/public/profile_picture/${creatorId}/avatar?nocache=${Date.now()}`,
+        );
     } catch (error) {
-        console.log('Failed to fetch profile picture: ', error);
+        // console.log('Failed to fetch profile picture: ', error);
     }
 };
 

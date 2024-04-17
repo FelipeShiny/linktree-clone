@@ -5,10 +5,12 @@ import { ChangeProfilePictureDialog } from './ChangeProfilePictureDialog';
 const ProfilePicture = ({
     creatorId,
     profilePicture,
+    setProfilePicture,
     router,
 }: {
     creatorId: string;
-    profilePicture: boolean;
+    profilePicture: string;
+    setProfilePicture: React.Dispatch<React.SetStateAction<string>>;
     router?: any;
 }) => {
     return (
@@ -16,7 +18,7 @@ const ProfilePicture = ({
             <div className="relative">
                 {creatorId && profilePicture ? (
                     <Image
-                        src={`https://dpehbxmmipfxwdjjmuog.supabase.co/storage/v1/object/public/profile_picture/${creatorId}/avatar?nocache=${Date.now()}`}
+                        src={profilePicture}
                         alt="profile_picture"
                         width={0}
                         height={0}
@@ -40,6 +42,7 @@ const ProfilePicture = ({
                 <ChangeProfilePictureDialog
                     router={router}
                     creatorId={creatorId}
+                    setProfilePicture={setProfilePicture}
                 />
             )}
         </div>
