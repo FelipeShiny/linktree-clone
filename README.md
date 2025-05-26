@@ -19,3 +19,5 @@ This project is a Linktree clone developed for me to explore the features of Sup
 [Official Supabase Website](https://supabase.com)
 
 [Code A Linktree Clone With React, NextJS, TailwindCSS, And Supabase (Full Coding Tutorial)](https://www.youtube.com/watch?v=Pbr7M4c9O3Q&t=240s) by [YourAverageTechBro](https://www.youtube.com/@YourAverageTechBro)
+
+--- Projeto sendo adaptado por [FelipeShiny] em [26/Maio/2025] ---
