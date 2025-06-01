@@ -96,7 +96,7 @@ export const fetchCreatorId = async (
     try {
         // Fetch profile picture and creator ID
         const { data: profileData, error: profileError } = await supabase
-            .from('users')
+            .from('profiles')
             .select('id')
             .eq('username', creatorSlug);
         if (profileError) throw profileError;

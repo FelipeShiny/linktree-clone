@@ -37,7 +37,7 @@ class AuthStore {
 
             try {
                 const { data, error } = await supabase
-                    .from('users')
+                    .from('profiles')
                     .select('username')
                     .eq('id', loggedInUserId);
                 if (error) throw error;
@@ -122,7 +122,7 @@ class AuthStore {
     async createUser(userId: string, username: string) {
         try {
             const { error } = await supabase
-                .from('users')
+                .from('profiles')
                 .insert({ id: userId, username: username });
             if (error) throw error;
         } catch (error) {

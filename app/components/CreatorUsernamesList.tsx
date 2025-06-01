@@ -9,7 +9,7 @@ const CreatorUsernamesList = () => {
         const fetchCreators = async () => {
             try {
                 const { data, error } = await supabase
-                    .from('users')
+                    .from('profiles')
                     .select('username');
                 if (error) throw error;
                 const usernames = data.map((item: any) => item.username);

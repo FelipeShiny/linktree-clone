@@ -19,7 +19,7 @@ const SignUp = observer(() => {
             try {
                 console.log('Checking username availability for:', username);
                 const { data, error } = await supabase
-                    .from('users')
+                    .from('profiles')
                     .select('username')
                     .eq('username', username)
                     .maybeSingle();
