@@ -3,8 +3,8 @@
 const nextConfig = {
   images: {
     domains: [
-      'vxquljeazujpsufkckhp.supabase.co', // Adicione seu domínio real do Supabase aqui
-      // Se você tiver um domínio personalizado do Supabase, adicione-o também
+      'vxquljeazujpsufkckhp.supabase.co', // Seu domínio atual do Supabase
+      // Adicione outros domínios conforme necessário
     ],
   },
 }

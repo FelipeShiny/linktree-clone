@@ -133,6 +133,26 @@ export const getProfilePictureUrl = (creatorId: string) => {
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`;
 };
 
+export const fetchCreatorData = async (username: string) => {
+    try {
+        const { data: userData, error: userError } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .eq('username', username)
+            .single();
+
+        if (userError) {
+            console.error('Error fetching creator data:', userError);
+            return null;
+        }
+
+        return userData;
+    } catch (error) {
+        console.error('Error fetching creator data:', error);
+        return null;
+    }
+};
+
 export const fetchLinks = async (
     creatorId: string,
     setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>,

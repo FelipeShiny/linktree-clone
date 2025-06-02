@@ -1,18 +1,22 @@
+
 import Image from 'next/image';
 import { getProfilePictureUrl } from '../utils/profile';
 
 interface ProfilePictureProps {
     creatorId: string;
+    profilePicture?: string;
+    setProfilePicture?: React.Dispatch<React.SetStateAction<string>>;
     username?: string;
     size?: number;
 }
 
 export default function ProfilePicture({ 
     creatorId, 
+    profilePicture,
     username, 
     size = 96 
 }: ProfilePictureProps) {
-    const profilePictureUrl = getProfilePictureUrl(creatorId);
+    const profilePictureUrl = profilePicture || getProfilePictureUrl(creatorId);
 
     return (
         <div className="relative">
