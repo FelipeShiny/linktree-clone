@@ -158,26 +158,50 @@ export const fetchLinks = async (
 };
 
 export const fetchProfilePicture = async (
-    creatorId: string,
-    setProfilePicture: React.Dispatch<React.SetStateAction<string>>,
+    userId: string,
+    setProfilePicture: (url: string) => void
 ) => {
     try {
-        const { data: profilePictureData } = await supabase.storage
+        // Primeiro verificar se o arquivo existe
+        const { data: files, error: listError } = await supabase.storage
             .from('avatars')
-            .list(creatorId + '/', {
+            .list(userId, {
                 limit: 1,
-                offset: 0,
-                sortBy: { column: 'name', order: 'asc' },
+                search: 'profile-picture'
             });
-        if (!profilePictureData || profilePictureData.length === 0) {
-            throw new Error('No profile picture data found.');
+
+        if (listError) {
+            console.error('Error listing profile picture files:', listError);
+            return;
         }
-        setProfilePicture(
-            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`,
-        );
+
+        if (!files || files.length === 0) {
+            // Usar imagem padrão se não encontrar arquivo
+            setProfilePicture('/assets/default-profile-picture.jpg');
+            return;
+        }
+
+        // Se o arquivo existe, buscar a URL pública
+        const { data, error } = await supabase.storage
+            .from('avatars')
+            .getPublicUrl(`${userId}/profile-picture`);
+
+        if (error) {
+            console.error('Error fetching profile picture URL:', error);
+            setProfilePicture('/assets/default-profile-picture.jpg');
+            return;
+        }
+
+        if (data?.publicUrl) {
+            // Garantir que a URL está correta e não contém interferências
+            const cleanUrl = data.publicUrl.replace(/.*\/public\//, '/public/');
+            setProfilePicture(data.publicUrl);
+        } else {
+            setProfilePicture('/assets/default-profile-picture.jpg');
+        }
     } catch (error) {
         console.error('Failed to fetch profile picture: ', error);
-        setProfilePicture('/assets/default-profile-picture.jpg'); // Fallback em caso de erro de fetch
+        setProfilePicture('/assets/default-profile-picture.jpg');
     }
 };
 
@@ -246,5 +270,50 @@ export const deleteLink = async (linkId: number) => {
         window.location.reload(); // Recarregar a página para atualizar a lista de links
     } catch (error) {
         console.error('Error deleting link: ', error); // Alterado para console.error
+    }
+};
+
+export const addLink = async (
+    userId: string,
+    title: string,
+    url: string,
+    onSuccess: () => void,
+    onError: (error: any) => void
+) => {
+    try {
+        // Validar parâmetros
+        if (!userId || !title?.trim() || !url?.trim()) {
+            throw new Error('Todos os campos são obrigatórios');
+        }
+
+        // Validar URL
+        try {
+            new URL(url.trim());
+        } catch {
+            throw new Error('URL inválida');
+        }
+
+        const { data, error } = await supabase
+            .from('links')
+            .insert([
+                {
+                    user_id: userId,
+                    title: title.trim(),
+                    url: url.trim(),
+                    created_at: new Date().toISOString(),
+                }
+            ])
+            .select();
+
+        if (error) {
+            console.error('Supabase error adding link:', error);
+            throw error;
+        }
+
+        console.log('Link added successfully:', data);
+        onSuccess();
+    } catch (error) {
+        console.error('Error adding link:', error);
+        onError(error);
     }
 };

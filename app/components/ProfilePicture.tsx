@@ -1,37 +1,65 @@
 
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { getProfilePictureUrl } from '../utils/profile';
 
 interface ProfilePictureProps {
-    creatorId: string;
-    profilePicture?: string;
-    setProfilePicture?: React.Dispatch<React.SetStateAction<string>>;
-    username?: string;
+    profilePicture: string;
+    username: string;
     size?: number;
+    className?: string;
 }
 
-export default function ProfilePicture({ 
-    creatorId, 
+const ProfilePicture: React.FC<ProfilePictureProps> = ({
     profilePicture,
-    username, 
-    size = 96 
-}: ProfilePictureProps) {
-    const profilePictureUrl = profilePicture || getProfilePictureUrl(creatorId);
+    username,
+    size = 120,
+    className = ''
+}) => {
+    const [imageError, setImageError] = useState(false);
+    const [imageLoading, setImageLoading] = useState(true);
+
+    const handleImageError = () => {
+        setImageError(true);
+        setImageLoading(false);
+    };
+
+    const handleImageLoad = () => {
+        setImageLoading(false);
+        setImageError(false);
+    };
+
+    // Usar imagem padrão se não houver profilePicture ou se houver erro
+    const imageSrc = imageError || !profilePicture || profilePicture === '' 
+        ? '/assets/default-profile-picture.jpg' 
+        : profilePicture;
 
     return (
-        <div className="relative">
+        <div className={`relative ${className}`} style={{ width: size, height: size }}>
+            {imageLoading && (
+                <div 
+                    className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-full"
+                    style={{ width: size, height: size }}
+                >
+                    <div className="text-gray-500 text-sm">Carregando...</div>
+                </div>
+            )}
             <Image
-                src={profilePictureUrl}
-                alt={`${username || 'User'}'s profile picture`}
+                src={imageSrc}
+                alt={`Foto de perfil de ${username}`}
                 width={size}
                 height={size}
-                className="rounded-full object-cover"
-                onError={(e) => {
-                    // Fallback para imagem padrão em caso de erro
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/assets/default-profile-picture.jpg';
+                className="rounded-full object-cover shadow-lg"
+                onError={handleImageError}
+                onLoad={handleImageLoad}
+                style={{ 
+                    display: imageLoading ? 'none' : 'block',
+                    width: size,
+                    height: size
                 }}
+                priority
             />
         </div>
     );
-}
+};
+
+export default ProfilePicture;
