@@ -68,7 +68,8 @@ export const uploadProfilePicture = async (
 
         const { data: updateData, error: updateError } = await supabase
             .from('profiles')
-            .update({ profile_picture_url: profilePictureUrl })
+            // >>>>> LINHA CORRIGIDA AQUI: profile_picture_url para avatar_url <<<<<
+            .update({ avatar_url: profilePictureUrl }) // <<<<<<< AQUI!
             .eq('id', creatorId);
 
         if (updateError) {
@@ -80,6 +81,7 @@ export const uploadProfilePicture = async (
 
         // Recarregar a página para garantir que a nova imagem seja exibida
         // Use window.location.reload() ou um callback para o componente pai
+        // router.refresh() é mais adequado para Server Components em alguns casos.
         window.location.reload(); // Recarrega a página inteira no navegador
     } catch (error) {
         console.error('Error in uploadProfilePicture:', error);
@@ -106,7 +108,6 @@ export const fetchCreatorId = async (creatorSlug: string) => {
     }
 };
 
-// >>>>> MANTENDO ESTA VERSÃO DE fetchCreatorData (começa na linha 110 no original) <<<<<
 export const fetchCreatorData = async (creatorSlug: string) => {
     try {
         const { data, error } = await supabase

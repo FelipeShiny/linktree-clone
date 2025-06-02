@@ -1,0 +1,32 @@
+# Contexto Atual do Projeto:
+O aplicativo Next.js (clone de Linktree) está em grande parte funcional.
+Login, cadastro, edição e exclusão de links (ANTES, agora não funcionam) estão ok.
+O problema "Module not found: Can't resolve '@supabase/ssr'" foi resolvido.
+O Supabase está configurado (tabelas profiles e links, bucket 'avatars').
+
+# Confirmação CRÍTICA:
+TODAS AS POLÍTICAS RLS (Row-Level Security) PARA AS TABELAS 'links' e 'profiles' E PARA O BUCKET 'avatars' ESTÃO CORRETAS E SALVAS NO SUPABASE.
+
+# Problemas Atuais (Foco EXCLUSIVO):
+1.  **Foto de Perfil NÃO Carrega:**
+    * A foto de perfil não é exibida nem para o usuário logado (dashboard) nem para visitantes (perfil público).
+    * O erro no console do navegador mostra requisições `GET` para a imagem retornando `400 (Bad Request)`.
+    * **O caminho da URL da imagem está MALFORMADO:** Ele está sendo **precedido/interferido** por `/_replit/static/devtools/eruda/3.2.3/eruda.js/v1/object/public/...`. Isso é uma interferência do ambiente de desenvolvimento do Replit (`eruda.js`).
+2.  **Links NÃO Funcionam Mais (Regressão):**
+    * Após as últimas mudanças, as operações com links (como criar novos links) pararam de funcionar. O aplicativo não consegue mais criar, exibir ou gerenciar links, mesmo com as políticas RLS confirmadas como corretas.
+
+# Minha Tarefa para Você (Replit AI) - ESCOPO EXCLUSIVO e FOCADO:
+1.  **Diagnosticar e Corrigir o Problema da Foto de Perfil:**
+    * Resolva a questão da URL malformada (`eruda.js` injetado no caminho da imagem) que está causando o erro `400 Bad Request`.
+    * Garanta que a foto de perfil seja exibida corretamente para usuários logados e visitantes.
+2.  **Diagnosticar e Corrigir a Regressão dos Links:**
+    * Identifique a causa pela qual as operações de links (criação, exibição, edição, exclusão) pararam de funcionar, **sabendo que as políticas RLS estão corretas**.
+    * Restaure a funcionalidade completa de links.
+
+# Flexibilidade e Restrições:
+* Você tem autonomia para implementar a solução técnica que considerar mais adequada para resolver estes dois problemas.
+* **Restrição ABSOLUTA:** **Corrija APENAS e EXCLUSIVAMENTE estes dois problemas.** Não faça nenhuma outra alteração no código ou funcionalidades.
+
+# Objetivo Final:
+* A foto de perfil deve ser exibida corretamente em todas as páginas (dashboard e perfil público).
+* Todas as operações de links (criar, visualizar, editar, excluir) devem funcionar perfeitamente novamente.
