@@ -1,0 +1,28 @@
+# Contexto Atual do Projeto:
+O aplicativo Next.js (clone de Linktree) está em grande parte funcional após as últimas correções.
+As funcionalidades de login, cadastro, criação, edição e exclusão de links para usuários logados estão funcionando corretamente.
+O problema "Module not found: Can't resolve '@supabase/ssr'" foi resolvido.
+O Supabase está configurado (tabelas profiles e links, bucket 'avatars').
+
+# Problemas Atuais (Foco EXCLUSIVO):
+1.  **Visualização de Perfil Público e Links (para visitantes sem login):** A página de perfil público (`app/[creatorSlug]/page.tsx`) não está exibindo os links e os dados do perfil (além do username). A foto de perfil também não aparece para visitantes.
+    * Quando alguém sem login tenta acessar a página pública, os links e a foto de perfil não carregam, aparecendo como "Loading..." ou com o ícone padrão.
+2.  **Foto de Perfil para Usuário Logado:** A foto de perfil do usuário logado também não está aparecendo no dashboard/página de administração.
+
+# Hipóteses para o Agent:
+Estes problemas são provavelmente relacionados a:
+* Políticas RLS `SELECT` para a role `anon` (anônima) e `authenticated` (autenticada) nas tabelas `public.profiles` e `public.links`.
+* Políticas RLS `SELECT` para a role `anon` e `authenticated` no bucket `avatars` (tabela `storage.objects`).
+* Ou, o código em `app/[creatorSlug]/page.tsx` (e funções `fetchCreatorData`, `fetchLinks`, `fetchProfilePicture`) pode não estar tratando corretamente o carregamento de dados para usuários não autenticados ou a exibição da foto.
+
+# Minha Tarefa para Você (Replit AI) - ESCOPO EXCLUSIVO:
+1.  **Revisar e Corrigir Políticas RLS:** Verifique e ajuste as políticas RLS `SELECT` nas seguintes entidades do Supabase para garantir que:
+    * `public.profiles`: Usuários `anon` e `authenticated` possam ler os dados públicos de perfis (username, URL da foto de perfil).
+    * `public.links`: Usuários `anon` e `authenticated` possam ler os links associados a um `creatorId` (conforme sua política já existente).
+    * `storage.objects` (para o bucket `avatars`): Usuários `anon` e `authenticated` possam ler os avatares (garantindo que `storage.foldername(name))[1]::uuid = auth.uid()` para autenticados e `auth.role() = 'anon'` para anônimos funcione corretamente para `SELECT`).
+2.  **Revisar Código de Exibição Pública:** Analise o código em `app/[creatorSlug]/page.tsx` e as funções chamadas por ele (`fetchCreatorData`, `fetchLinks`, `fetchProfilePicture`) para garantir que os dados e a foto de perfil sejam buscados e exibidos corretamente para visitantes (sem login) e para o usuário logado.
+3.  **Restrição de Escopo:** **Corrija APENAS e EXCLUSIVAMENTE estes problemas.** Não faça nenhuma outra alteração no código, como mudanças de idioma, novas customizações de UI, ou outras funcionalidades não relacionadas a estes dois problemas específicos de visualização.
+
+# Objetivo Final:
+* A página de perfil público deve exibir corretamente a foto de perfil e todos os links associados para qualquer visitante, sem exigir login.
+* A foto de perfil do usuário logado deve ser exibida corretamente no dashboard/página de administração.
