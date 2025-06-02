@@ -1,0 +1,34 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+As funcionalidades básicas (cadastro, login, gestão de links) estão funcionando.
+O Supabase está configurado (tabelas profiles e links, RLS e triggers).
+O bucket 'avatars' no Supabase Storage está criado com políticas RLS de INSERT/UPDATE (para authenticated) e SELECT (para anon/public).
+A URL do meu projeto Supabase real está configurada em NEXT_PUBLIC_SUPABASE_URL nos Secrets do Replit.
+
+# Problema Principal: Upload e Exibição de Foto de Perfil
+1.  **Erro de Compilação/Runtime:** Ocorre um erro `Failed to parse src "<span class="math-inline">...` no `next/image` ou um `TypeError: fetch failed` com `getaddrinfo ENOTFOUND dpehbxmmipfxwdjjmuog.supabase.co`.
+    * Isso acontece porque a URL da imagem de perfil (que deveria ser `https://SEU_DOMINIO.supabase.co/storage/...`) está sendo gerada incorretamente no código, contendo `<span>` e a URL `dpehbxmmipfxwdjjmuog.supabase.co` ou `profile_picture` em vez de `avatars`.
+2.  **Violação de Política RLS:** `Failed to update profile picture: new row violates row-level security policy`
+    * Isso acontece na operação de upload, indicando que o token de autenticação pode não estar sendo passado corretamente para o Storage, ou o cliente Supabase não está inicializado de forma robusta para o lado do navegador.
+
+# Arquivos Relevantes e Linhas Específicas:
+- `app/components/ChangeProfilePictureDialog.tsx`: LINHA 77 (onde a URL da imagem é definida para setProfilePicture). Esta linha frequentemente tem o erro de sintaxe com `<span>`.
+- `app/utils/profile.ts`:
+    - Linha 58 e 71: Chamadas `supabase.storage.from('avatars').update(...)` para upload/atualização.
+    - Linha 97: `supabase.from('profiles')` (deve ser 'profiles', não 'avatars').
+    - Linha 149: Definição da URL para `setProfilePicture` (também pode ter o erro de `<span>` ou a URL antiga).
+- `app/utils/supabaseClient.ts`: Onde a instância `supabase` é criada.
+- `next.config.js`: Onde o domínio das imagens é configurado (deve ser o domínio real do Supabase).
+
+# Minha Tarefa para Você (Replit AI):
+1.  **Corrija a sintaxe da URL na linha 77 de `app/components/ChangeProfilePictureDialog.tsx`** para que seja uma template literal válida (` `` `) e utilize `process.env.NEXT_PUBLIC_SUPABASE_URL` com o caminho `avatars`.
+2.  **Corrija a URL na linha 149 de `app/utils/profile.ts`** para que seja uma template literal válida e utilize `process.env.NEXT_PUBLIC_SUPABASE_URL` com o caminho `avatars`.
+3.  **Garanta que em `app/utils/profile.ts` na linha 97 a tabela seja `profiles`** (se estiver incorreto).
+4.  **Verifique e ajuste o `next.config.js`** para que o `images.domains` contenha apenas o **DOMÍNIO REAL** do projeto Supabase do usuário (o que está nos Secrets) e não o domínio `dpehbxmmipfxwdjjmuog.supabase.co`.
+5.  **Revise a lógica de upload da foto de perfil em `app/utils/profile.ts` (função `uploadProfilePicture`) e a inicialização do cliente Supabase em `app/utils/supabaseClient.ts`** para garantir que o token de autenticação seja passado corretamente para as requisições de Storage, resolvendo o erro de RLS "violates row-level security policy". Se for necessário, utilize `createBrowserClient` em `supabaseClient.ts` (já havíamos tentado isso antes, mas é crucial que esteja certo).
+6.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas.**
+
+# Restrições e Preferências:
+- Foque em resolver os problemas de upload/exibição da foto de perfil.
+- Mantenha a arquitetura existente.
+- Garanta que as URLs usem variáveis de ambiente (Secrets) quando possível.
