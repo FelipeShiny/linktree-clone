@@ -80,7 +80,6 @@ export const uploadProfilePicture = async (
 
         // Recarregar a página para garantir que a nova imagem seja exibida
         // Use window.location.reload() ou um callback para o componente pai
-        // router.refresh() é mais adequado para Server Components em alguns casos.
         window.location.reload(); // Recarrega a página inteira no navegador
     } catch (error) {
         console.error('Error in uploadProfilePicture:', error);
@@ -107,6 +106,7 @@ export const fetchCreatorId = async (creatorSlug: string) => {
     }
 };
 
+// >>>>> MANTENDO ESTA VERSÃO DE fetchCreatorData (começa na linha 110 no original) <<<<<
 export const fetchCreatorData = async (creatorSlug: string) => {
     try {
         const { data, error } = await supabase
@@ -131,26 +131,6 @@ export const getProfilePictureUrl = (creatorId: string) => {
     if (!creatorId) return '/assets/default-profile-picture.jpg';
 
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`;
-};
-
-export const fetchCreatorData = async (username: string) => {
-    try {
-        const { data: userData, error: userError } = await supabase
-            .from('profiles')
-            .select('id, username')
-            .eq('username', username)
-            .single();
-
-        if (userError) {
-            console.error('Error fetching creator data:', userError);
-            return null;
-        }
-
-        return userData;
-    } catch (error) {
-        console.error('Error fetching creator data:', error);
-        return null;
-    }
 };
 
 export const fetchLinks = async (
@@ -192,7 +172,7 @@ export const fetchProfilePicture = async (
             throw new Error('No profile picture data found.');
         }
         setProfilePicture(
-            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`,
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`,
         );
     } catch (error) {
         console.error('Failed to fetch profile picture: ', error);

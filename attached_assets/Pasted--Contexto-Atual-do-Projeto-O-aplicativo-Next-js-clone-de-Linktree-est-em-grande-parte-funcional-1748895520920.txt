@@ -1,0 +1,28 @@
+# Contexto Atual do Projeto:
+O aplicativo Next.js (clone de Linktree) está em grande parte funcional.
+Login, cadastro, criação, edição e exclusão de links para usuários logados e a visualização de links para visitantes estão funcionando corretamente.
+O problema "Module not found: Can't resolve '@supabase/ssr'" foi resolvido.
+O Supabase está configurado (tabelas profiles e links, bucket 'avatars').
+
+# Problemas Atuais (Foco EXCLUSIVO na Foto de Perfil):
+1.  **Interface de Upload da Foto de Perfil Ausente:** Na página de administração/dashboard (onde o usuário logado gerencia seu perfil), o botão/opção para trocar a foto de perfil (`ChangeProfilePictureDialog`) **não aparece**.
+    * Não consigo clicar para fazer o upload da foto.
+2.  **Exibição da Foto de Perfil Incorreta:** A foto de perfil **NÃO É EXIBIDA** de forma alguma, nem para o usuário logado em seu dashboard, nem para visitantes na página de perfil público. Aparece apenas o ícone padrão.
+
+# Hipóteses para o Agent:
+* A ausência da interface pode ser devido ao `ChangeProfilePictureDialog` não estar sendo renderizado corretamente em `Admin.tsx` ou estar oculto por CSS.
+* A falha na exibição da foto (mesmo após um upload manual no Supabase Storage) pode ser devido a:
+    * Um erro na função `fetchProfilePicture` (em `profile.ts`).
+    * Um problema de renderização em `ProfilePicture.tsx` que impede a imagem de carregar.
+    * Um problema persistente no `next.config.js` (embora tenhamos verificado várias vezes).
+    * Problemas de RLS `SELECT` no bucket `avatars` (apesar das correções anteriores).
+
+# Minha Tarefa para Você (Replit AI) - ESCOPO EXCLUSIVO e FOCADO:
+1.  **Restaurar a Interface de Upload da Foto:** Garanta que o botão/opção para trocar a foto de perfil (`ChangeProfilePictureDialog`) seja **visível e funcional** na página de administração/dashboard do usuário logado.
+2.  **Corrigir a Exibição da Foto de Perfil:** Diagnostique e corrija por que a foto de perfil **NÃO É EXIBIDA** em nenhuma página (dashboard ou perfil público), tanto para o usuário logado quanto para visitantes.
+3.  **Flexibilidade de Solução:** Você tem autonomia para implementar a solução técnica que considerar mais adequada para resolver estes dois problemas da foto de perfil.
+4.  **Restrição ABSOLUTA:** **Corrija APENAS e EXCLUSIVAMENTE estes dois problemas da foto de perfil.** Não faça nenhuma outra alteração no código, como personalização de username, idioma, ou qualquer outra funcionalidade que não seja diretamente relacionada à exibição e upload da foto de perfil.
+
+# Objetivo Final:
+* O botão/opção para trocar a foto de perfil deve ser visível na página de administração.
+* A foto de perfil deve ser exibida corretamente na página de administração e na página de perfil público para todos os usuários (logados e visitantes).
