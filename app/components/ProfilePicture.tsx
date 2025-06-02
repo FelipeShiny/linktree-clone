@@ -1,52 +1,33 @@
 import Image from 'next/image';
-import React from 'react';
-import { ChangeProfilePictureDialog } from './ChangeProfilePictureDialog';
+import { getProfilePictureUrl } from '../utils/profile';
 
-const ProfilePicture = ({
-    creatorId,
-    profilePicture,
-    setProfilePicture,
-    router,
-}: {
+interface ProfilePictureProps {
     creatorId: string;
-    profilePicture: string;
-    setProfilePicture: React.Dispatch<React.SetStateAction<string>>;
-    router?: any;
-}) => {
+    username?: string;
+    size?: number;
+}
+
+export default function ProfilePicture({ 
+    creatorId, 
+    username, 
+    size = 96 
+}: ProfilePictureProps) {
+    const profilePictureUrl = getProfilePictureUrl(creatorId);
+
     return (
-        <div className="relative inline-block">
-            <div className="relative">
-                {creatorId && profilePicture ? (
-                    <Image
-                        src={profilePicture}
-                        alt="profile_picture"
-                        width={0}
-                        height={0}
-                        sizes={'1'}
-                        className="h-48 w-48 rounded-full object-cover shadow-lg"
-                        priority
-                    />
-                ) : (
-                    <Image
-                        src={'/assets/default-profile-picture.jpg'}
-                        alt="profile_picture"
-                        width={0}
-                        height={0}
-                        sizes={'1'}
-                        className="h-48 w-48 rounded-full object-cover shadow-lg"
-                        priority
-                    />
-                )}
-            </div>
-            {router && (
-                <ChangeProfilePictureDialog
-                    router={router}
-                    creatorId={creatorId}
-                    setProfilePicture={setProfilePicture}
-                />
-            )}
+        <div className="relative">
+            <Image
+                src={profilePictureUrl}
+                alt={`${username || 'User'}'s profile picture`}
+                width={size}
+                height={size}
+                className="rounded-full object-cover"
+                onError={(e) => {
+                    // Fallback para imagem padrão em caso de erro
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/assets/default-profile-picture.jpg';
+                }}
+            />
         </div>
     );
-};
-
-export default ProfilePicture;
+}

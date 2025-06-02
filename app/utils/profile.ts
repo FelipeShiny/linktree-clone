@@ -1,6 +1,6 @@
 import AuthStore from '../interfaces/AuthStore';
 import { Link } from '../types/linkTypes';
-import supabase from './supabaseClient'; // Garanta que esta importação esteja presente e correta.
+import supabase from './supabaseClient';
 
 export const addNewLink = async (
     newTitle: string,
@@ -46,66 +46,87 @@ export const uploadProfilePicture = async (
     router: any,
 ) => {
     try {
-        const maxSizeMB = 5;
-        const maxSizeBytes = maxSizeMB * 1024 * 1024; // Convert megabytes to bytes
-        if (file.size > maxSizeBytes) {
-            throw new Error(
-                `File size exceeds the maximum limit of ${maxSizeMB} MB`,
-            );
+        // Primeiro, fazer upload do arquivo para o bucket 'avatars'
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(`${creatorId}/avatar`, file, {
+                cacheControl: '3600',
+                upsert: true,
+            });
+
+        if (uploadError) {
+            console.error('Failed to upload profile picture:', uploadError.message);
+            return;
         }
 
-        // Já está 'avatars'
-        const { data: updateData, error: updateError } = await supabase.storage
-            .from('avatars')
-            .update(creatorId + '/avatar', file, { cacheControl: '3600' });
+        console.log('Profile picture uploaded successfully:', uploadData);
+
+        // Depois, atualizar a URL na tabela profiles
+        const profilePictureUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar`;
+
+        const { data: updateData, error: updateError } = await supabase
+            .from('profiles')
+            .update({ profile_picture_url: profilePictureUrl })
+            .eq('id', creatorId);
 
         if (updateError) {
-            console.error(
-                'Failed to update profile picture (first attempt):',
-                updateError.message,
-            );
-
-            // Já está 'avatars'
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('avatars')
-                .update(creatorId + '/avatar', file);
-
-            if (uploadError) {
-                console.error(
-                    'Failed to upload profile picture (second attempt):',
-                    uploadError.message,
-                );
-            } else {
-                console.log('File uploaded successfully:', uploadData);
-                location.reload();
-            }
-        } else {
-            console.log('Profile picture updated successfully:', updateData);
-            location.reload();
+            console.error('Failed to update profile picture URL:', updateError.message);
+            return;
         }
-    } catch (error: any) { // Adicionado 'any' para o tipo de erro para compatibilidade
-        console.error('Failed to upload profile picture (catch block):', error.message || error);
+
+        console.log('Profile picture URL updated successfully:', updateData);
+
+        // Refresh da página após sucesso
+        router.refresh();
+    } catch (error) {
+        console.error('Error in uploadProfilePicture:', error);
     }
 };
 
-export const fetchCreatorId = async (
-    creatorSlug: string,
-    setCreatorId: React.Dispatch<React.SetStateAction<string>>,
-) => {
+export const fetchCreatorId = async (creatorSlug: string) => {
     try {
-        // Fetch profile picture and creator ID
-        // CORRIGIDO: Deve ser 'profiles' aqui, não 'avatars'
-        const { data: profileData, error: profileError } = await supabase
-            .from('profiles') // <-- CORRIGIDO: Era 'avatars', agora é 'profiles'
+        const { data, error } = await supabase
+            .from('profiles')
             .select('id')
-            .eq('username', creatorSlug);
-        if (profileError) throw profileError;
+            .eq('username', creatorSlug)
+            .single();
 
-        const fetchedCreatorId = profileData[0]?.id;
-        setCreatorId(fetchedCreatorId);
+        if (error) {
+            console.error('Error fetching creator ID:', error.message);
+            return null;
+        }
+
+        return data?.id || null;
     } catch (error) {
-        console.log('Error fetching profile data: ', error);
+        console.error('Error in fetchCreatorId:', error);
+        return null;
     }
+};
+
+export const fetchCreatorData = async (creatorSlug: string) => {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('username', creatorSlug)
+            .single();
+
+        if (error) {
+            console.error('Error fetching creator data:', error.message);
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error in fetchCreatorData:', error);
+        return null;
+    }
+};
+
+export const getProfilePictureUrl = (creatorId: string) => {
+    if (!creatorId) return '/assets/default-profile-picture.jpg';
+
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`;
 };
 
 export const fetchLinks = async (
@@ -135,7 +156,7 @@ export const fetchProfilePicture = async (
 ) => {
     try {
         const { data: profilePictureData } = await supabase.storage
-            .from('avatars') // Já está 'avatars', mantido
+            .from('avatars')
             .list(creatorId + '/', {
                 limit: 1,
                 offset: 0,
@@ -145,7 +166,6 @@ export const fetchProfilePicture = async (
             throw new Error('No profile picture data found.');
         }
         setProfilePicture(
-            // **CORRIGIDO:** Removido o <span> e { } problemáticos, e garantido que a URL use a variável de ambiente.
             `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`,
         );
     } catch (error) {

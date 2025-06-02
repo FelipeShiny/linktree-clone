@@ -74,7 +74,7 @@ export function ChangeProfilePictureDialog({
                                     }
                                     setSelectedFile(undefined);
                                     setProfilePicture(
-                                        `https://dpehbxmmipfxwdjjmuog.supabase.co/storage/v1/object/public/profile_picture/${creatorId}/avatar?nocache=${Date.now()}`,
+                                        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`,
                                     );
                                 }}
                             >
