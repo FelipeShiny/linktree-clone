@@ -10,6 +10,7 @@ import { Eye } from 'lucide-react';
 import NextLink from 'next/link';
 import EnterUrl from '../components/EnterUrl';
 import EditableLinkItem from '../components/EditableLinkItem';
+import { ChangeProfilePictureDialog } from '../components/ChangeProfilePictureDialog'; // <<<<< IMPORT ADICIONADO AQUI
 
 const Admin = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -55,8 +56,16 @@ const Admin = () => {
                     creatorId={creatorId}
                     profilePicture={profilePicture}
                     setProfilePicture={setProfilePicture}
-                    router={router}
+                    // router={router} // Removido router daqui se ProfilePicture não precisa dele diretamente
                 />
+
+                {/* <<<<< COMPONENTE DE UPLOAD DA FOTO ADICIONADO AQUI >>>>> */}
+                <ChangeProfilePictureDialog
+                    creatorId={creatorId}
+                    router={router}
+                    setProfilePicture={setProfilePicture}
+                />
+                {/* <<<<< FIM DO COMPONENTE DE UPLOAD DA FOTO >>>>> */}
 
                 <h3>@{creatorUsername}</h3>
                 <NextLink href={`/${creatorUsername}`}>

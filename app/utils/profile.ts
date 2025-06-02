@@ -1,6 +1,8 @@
+// app/utils/profile.ts
+
 import AuthStore from '../interfaces/AuthStore';
 import { Link } from '../types/linkTypes';
-import supabase from './supabaseClient';
+import supabase from './supabaseClient'; // Garanta que esta importação esteja presente e correta.
 
 export const addNewLink = async (
     newTitle: string,
@@ -36,14 +38,14 @@ export const addNewLink = async (
             throw new Error('Title, URL, or user ID is missing or invalid.');
         }
     } catch (error) {
-        console.log('Error in creating new link: ', error);
+        console.error('Error in creating new link: ', error); // Alterado para console.error
     }
 };
 
 export const uploadProfilePicture = async (
     creatorId: string,
     file: File,
-    router: any,
+    router: any, // router ainda é passado, mas não será usado diretamente aqui para refresh
 ) => {
     try {
         // Primeiro, fazer upload do arquivo para o bucket 'avatars'
@@ -76,8 +78,10 @@ export const uploadProfilePicture = async (
 
         console.log('Profile picture URL updated successfully:', updateData);
 
-        // Refresh da página após sucesso
-        router.refresh();
+        // Recarregar a página para garantir que a nova imagem seja exibida
+        // Use window.location.reload() ou um callback para o componente pai
+        // router.refresh() é mais adequado para Server Components em alguns casos.
+        window.location.reload(); // Recarrega a página inteira no navegador
     } catch (error) {
         console.error('Error in uploadProfilePicture:', error);
     }
@@ -135,17 +139,19 @@ export const fetchLinks = async (
     setIsLinkLoading: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
     try {
-        // Fetch creator links using creatorId
+        setIsLinkLoading(true); // Definir como loading antes da busca
         const { data: linksData, error: linksError } = await supabase
             .from('links')
             .select('id, title, url, show')
-            .eq('user_id', creatorId);
+            .eq('user_id', creatorId); // Garante que busca links do criador correto
+
         if (linksError) throw linksError;
 
         setCreatorLinks(linksData);
         setIsLinkLoading(false);
     } catch (error) {
-        console.log('Error fetching links data: ', error);
+        console.error('Error fetching links data: ', error); // Alterado para console.error
+        setCreatorLinks([]); // Limpar links em caso de erro
         setIsLinkLoading(false);
     }
 };
@@ -169,7 +175,8 @@ export const fetchProfilePicture = async (
             `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`,
         );
     } catch (error) {
-        // console.log('Failed to fetch profile picture: ', error);
+        console.error('Failed to fetch profile picture: ', error);
+        setProfilePicture('/assets/default-profile-picture.jpg'); // Fallback em caso de erro de fetch
     }
 };
 
@@ -181,7 +188,7 @@ export const updateLinkTitle = async (linkId: number, newTitle: string) => {
             .eq('id', linkId);
         if (error) throw error;
     } catch (error) {
-        console.log('error: ', error);
+        console.error('error updating link title: ', error); // Alterado para console.error
     }
 };
 
@@ -193,7 +200,7 @@ export const updateLinkUrl = async (urlId: number, newUrl: string) => {
             .eq('id', urlId);
         if (error) throw error;
     } catch (error) {
-        console.log('error: ', error);
+        console.error('error updating link URL: ', error); // Alterado para console.error
     }
 };
 
@@ -222,7 +229,7 @@ export const updateShowLink = async (linkId: number) => {
 
         console.log('Show state of link updated successfully.');
     } catch (error) {
-        console.log('Could not change state of show: ', error);
+        console.error('Could not change state of show: ', error); // Alterado para console.error
     }
 };
 
@@ -232,9 +239,11 @@ export const deleteLink = async (linkId: number) => {
             .from('links')
             .delete()
             .eq('id', linkId)
-            .select();
+            .select(); // .select() pode não ser necessário aqui se você só quer deletar
         if (error) throw error;
+        console.log('Link deleted successfully.');
+        window.location.reload(); // Recarregar a página para atualizar a lista de links
     } catch (error) {
-        console.log('error: ', error);
+        console.error('Error deleting link: ', error); // Alterado para console.error
     }
 };
