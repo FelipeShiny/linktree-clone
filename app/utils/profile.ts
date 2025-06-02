@@ -172,7 +172,7 @@ export const fetchProfilePicture = async (
             throw new Error('No profile picture data found.');
         }
         setProfilePicture(
-            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`,
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`,
         );
     } catch (error) {
         console.error('Failed to fetch profile picture: ', error);

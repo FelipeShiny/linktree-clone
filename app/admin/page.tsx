@@ -1,95 +1,79 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { observer } from 'mobx-react';
 import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
 import ProfilePicture from '../components/ProfilePicture';
+import ChangeProfilePictureDialog from '../components/ChangeProfilePictureDialog';
+import EditableLinkItem from '../components/EditableLinkItem';
+import EnterUrl from '../components/EnterUrl';
 import { fetchLinks, fetchProfilePicture } from '../utils/profile';
 import { Link } from '../types/linkTypes';
-import { Eye } from 'lucide-react';
-import NextLink from 'next/link';
-import EnterUrl from '../components/EnterUrl';
-import EditableLinkItem from '../components/EditableLinkItem';
-import { ChangeProfilePictureDialog } from '../components/ChangeProfilePictureDialog'; // <<<<< IMPORT ADICIONADO AQUI
 
-const Admin = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
-    const [creatorId, setCreatorId] = useState<string>('');
-    const [creatorUsername, setCreatorUsername] = useState<string | undefined>(
-        '',
-    );
-
-    // check authentication
+const Admin = observer(() => {
     const router = useRouter();
+    const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
+    const [profilePicture, setProfilePicture] = useState<string>('');
+    const [isLinkLoading, setIsLinkLoading] = useState<boolean>(false);
 
     useEffect(() => {
-        if (AuthStore.authUserId) {
-            setIsAuthenticated(true);
-            setCreatorId(AuthStore.authUserId);
-            setCreatorUsername(AuthStore.authUsername);
-        } else {
+        if (!AuthStore.isAuthenticated) {
             router.push('/login');
+            return;
+        }
+
+        if (AuthStore.authUserId) {
+            fetchLinks(AuthStore.authUserId, setCreatorLinks, setIsLinkLoading);
+            fetchProfilePicture(AuthStore.authUserId, setProfilePicture);
         }
     }, [router]);
 
-    const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
-    const [profilePicture, setProfilePicture] = useState<string>('');
-    useEffect(() => {
-        if (creatorId) {
-            fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
-            fetchProfilePicture(creatorId, setProfilePicture);
-        }
-    }, [creatorId]);
-    // DON'T ADD creatorLinks (infinite call)
-
-    const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
-
-    // Create
-    const [newTitle, setNewTitle] = useState<string>('');
-    const [newUrl, setNewUrl] = useState<string>('');
+    if (!AuthStore.isAuthenticated) {
+        return <div>Redirecionando...</div>;
+    }
 
     return (
-        isAuthenticated && (
-            <div className="h-min-screen flex flex-col items-center justify-center gap-5 px-5 py-10">
+        <div className="flex h-screen flex-col items-center justify-center gap-5 px-5 py-10">
+            <div className="relative">
                 <ProfilePicture
-                    creatorId={creatorId}
+                    creatorId={AuthStore.authUserId || ''}
                     profilePicture={profilePicture}
-                    setProfilePicture={setProfilePicture}
-                    // router={router} // Removido router daqui se ProfilePicture não precisa dele diretamente
+                    username={AuthStore.authUsername}
+                    size={96}
                 />
-
-                {/* <<<<< COMPONENTE DE UPLOAD DA FOTO ADICIONADO AQUI >>>>> */}
-                <ChangeProfilePictureDialog
-                    creatorId={creatorId}
-                    router={router}
-                    setProfilePicture={setProfilePicture}
-                />
-                {/* <<<<< FIM DO COMPONENTE DE UPLOAD DA FOTO >>>>> */}
-
-                <h3>@{creatorUsername}</h3>
-                <NextLink href={`/${creatorUsername}`}>
-                    <button className="flex w-48 gap-2 bg-[#222222]">
-                        <Eye className="text-white" />
-                        <p>View Profile</p>
-                    </button>
-                </NextLink>
-                {isAuthenticated && (
-                    <EnterUrl
-                        newUrl={newUrl}
-                        setNewUrl={setNewUrl}
-                        newTitle={newTitle}
-                        setNewTitle={setNewTitle}
-                        creatorLinks={creatorLinks}
-                        setCreatorLinks={setCreatorLinks}
+                <div className="absolute -bottom-2 -right-2">
+                    <ChangeProfilePictureDialog 
+                        setProfilePicture={setProfilePicture}
                     />
-                )}
-                {creatorLinks.map((link: Link, index: number) => (
-                    <EditableLinkItem key={index} link={link} />
-                ))}
+                </div>
             </div>
-        )
+
+            <h1 className="text-2xl font-bold">@{AuthStore.authUsername}</h1>
+
+            <div className="w-full max-w-md">
+                <EnterUrl
+                    creatorLinks={creatorLinks}
+                    setCreatorLinks={setCreatorLinks}
+                />
+            </div>
+
+            <div className="w-full max-w-md space-y-4">
+                {isLinkLoading ? (
+                    <div>Carregando links...</div>
+                ) : (
+                    creatorLinks.map((link) => (
+                        <EditableLinkItem
+                            key={link.id}
+                            link={link}
+                            creatorLinks={creatorLinks}
+                            setCreatorLinks={setCreatorLinks}
+                        />
+                    ))
+                )}
+            </div>
+        </div>
     );
-};
+});
 
 export default Admin;
