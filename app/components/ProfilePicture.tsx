@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChangeProfilePictureDialog } from './ChangeProfilePictureDialog';
 
 interface ProfilePictureProps {
@@ -17,20 +17,57 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     router,
     size = 192,
 }) => {
+    const [imageUrl, setImageUrl] = useState<string>('');
+    const [hasError, setHasError] = useState<boolean>(false);
+
+    useEffect(() => {
+        // Construir URL da imagem de forma robusta
+        const buildImageUrl = () => {
+            if (profilePicture && profilePicture.startsWith('http')) {
+                // Se já é uma URL completa, usar diretamente
+                return profilePicture;
+            }
+            
+            // Construir URL usando variável de ambiente
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            if (supabaseUrl && creatorId) {
+                // Adicionar timestamp para quebrar cache
+                const timestamp = Date.now();
+                return `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar?v=${timestamp}`;
+            }
+            
+            return '/assets/default-profile-picture.jpg';
+        };
+
+        const url = buildImageUrl();
+        setImageUrl(url);
+        setHasError(false);
+    }, [profilePicture, creatorId]);
+
+    const handleImageError = () => {
+        console.log('Erro ao carregar imagem, usando padrão');
+        setHasError(true);
+        setImageUrl('/assets/default-profile-picture.jpg');
+    };
+
+    const handleImageLoad = () => {
+        console.log('Imagem carregada com sucesso:', imageUrl);
+        setHasError(false);
+    };
+
     return (
         <div className="relative inline-block">
             <div className="relative">
                 <img
-                    src={profilePicture || '/assets/default-profile-picture.jpg'}
-                    alt="profile_picture"
+                    src={hasError ? '/assets/default-profile-picture.jpg' : imageUrl}
+                    alt="Profile picture"
                     width={size}
                     height={size}
-                    className="rounded-full object-cover shadow-lg"
+                    className="rounded-full object-cover shadow-lg border-4 border-white"
                     style={{ width: size, height: size }}
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/assets/default-profile-picture.jpg';
-                    }}
+                    onError={handleImageError}
+                    onLoad={handleImageLoad}
+                    crossOrigin="anonymous"
                 />
             </div>
             {router && setProfilePicture && (

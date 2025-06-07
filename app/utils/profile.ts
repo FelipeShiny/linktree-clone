@@ -142,7 +142,7 @@ export const fetchCreatorData = async (creatorSlug: string) => {
 };
 
 // Função para gerar URL da imagem de perfil com bust de cache
-export const getProfilePictureUrl = (creatorId: string) => {
+export const getProfilePictureUrl = (creatorId: string, forceRefresh: boolean = false) => {
     if (!creatorId) {
         console.log('CreatorId não fornecido, usando imagem padrão');
         return '/assets/default-profile-picture.jpg';
@@ -155,8 +155,9 @@ export const getProfilePictureUrl = (creatorId: string) => {
     }
     
     // Adicionar timestamp para quebrar cache
-    const timestamp = Date.now();
-    const url = `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar?v=${timestamp}`;
+    const timestamp = forceRefresh ? Date.now() : '';
+    const cacheParam = timestamp ? `?v=${timestamp}` : '';
+    const url = `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar${cacheParam}`;
     
     console.log('URL da imagem gerada:', url);
     return url;

@@ -37,18 +37,24 @@ export function ChangeProfilePictureDialog({
 
         setIsUploading(true);
         try {
-            await uploadProfilePicture(creatorId, selectedFile, router);
+            const uploadedUrl = await uploadProfilePicture(creatorId, selectedFile, router);
             
-            // Atualizar a URL da imagem com timestamp para forçar recarregamento
-            const newImageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`;
+            // Usar a URL retornada pelo upload ou gerar nova com timestamp
+            const newImageUrl = uploadedUrl || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?v=${Date.now()}`;
             setProfilePicture(newImageUrl);
             
             setSelectedFile(undefined);
             
-            // Fechar o dialog
-            document.querySelector('[data-state="open"]')?.click();
+            // Fechar o dialog programaticamente
+            const closeButton = document.querySelector('[data-state="open"] button[aria-label="Close"]');
+            if (closeButton) {
+                (closeButton as HTMLElement).click();
+            }
+            
+            console.log('Upload concluído com sucesso. Nova URL:', newImageUrl);
         } catch (error) {
             console.error('Erro no upload:', error);
+            alert('Erro no upload da imagem. Tente novamente.');
         } finally {
             setIsUploading(false);
         }

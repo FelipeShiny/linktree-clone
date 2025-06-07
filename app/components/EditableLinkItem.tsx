@@ -15,7 +15,13 @@ import {
 } from '../utils/profile';
 import { DeleteLinkButton } from './DeleteLinkButton';
 
-const EditableLinkItem = ({ link }: { link: Link }) => {
+interface EditableLinkItemProps {
+    link: Link;
+    creatorLinks: Link[];
+    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
+}
+
+const EditableLinkItem = ({ link, creatorLinks, setCreatorLinks }: EditableLinkItemProps) => {
     const [preSubmittedTitle, setPreSubmittedTitle] = useState(link.title);
     const [editableTitle, setEditableTitle] = useState(link.title);
     const [isEditing, setIsEditing] = useState(false);
@@ -146,7 +152,11 @@ const EditableLinkItem = ({ link }: { link: Link }) => {
                             onClick={handleShow}
                         />
                     )}
-                    <DeleteLinkButton linkId={link.id} />
+                    <DeleteLinkButton 
+                        linkId={link.id}
+                        creatorLinks={creatorLinks}
+                        setCreatorLinks={setCreatorLinks}
+                    />
                 </div>
             )}
         </div>
