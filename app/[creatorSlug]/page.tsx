@@ -5,7 +5,8 @@ import { observer } from 'mobx-react';
 import {
     fetchCreatorId,
     fetchLinks,
-    fetchProfilePicture,
+    fetchCreatorData,
+    getProfilePictureUrl,
 } from '../utils/profile';
 import ProfilePicture from '../components/ProfilePicture';
 import CreatorLinks from '../components/CreatorLinks';
@@ -22,14 +23,22 @@ const CreatorLinksPage = observer(
 
         useEffect(() => {
             if (creatorSlug) {
-                fetchCreatorId(creatorSlug, setCreatorId);
+                const loadCreatorId = async () => {
+                    const id = await fetchCreatorId(creatorSlug);
+                    if (id) {
+                        setCreatorId(id);
+                    }
+                };
+                loadCreatorId();
             }
         }, [creatorSlug]);
 
         useEffect(() => {
             if (creatorId) {
                 fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
-                fetchProfilePicture(creatorId, setProfilePicture);
+                // Generate profile picture URL using the new function
+                const profilePictureUrl = getProfilePictureUrl(creatorId);
+                setProfilePicture(profilePictureUrl);
             }
         }, [creatorId]);
 
