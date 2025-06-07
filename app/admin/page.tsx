@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
 import ProfilePicture from '../components/ProfilePicture';
-import { fetchLinks, fetchProfilePicture } from '../utils/profile';
+import { fetchLinks, getProfilePictureUrl } from '../utils/profile';
 import { Link } from '../types/linkTypes';
 import { Eye } from 'lucide-react';
 import NextLink from 'next/link';
@@ -41,9 +41,10 @@ const Admin = () => {
     useEffect(() => {
         if (creatorId) {
             fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
-            fetchProfilePicture(creatorId, setProfilePicture);
+            const url = getProfilePictureUrl(creatorId);
+            setProfilePicture(url);
         }
-    }, [creatorId]); // Removido dependências desnecessárias que causavam loopsação
+    }, [creatorId]);
 
     return (
         <div className="min-h-screen bg-gray-100 p-4">
