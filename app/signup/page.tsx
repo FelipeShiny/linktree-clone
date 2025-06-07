@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -10,7 +9,7 @@ const SignupPage = () => {
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState<string>('');
     const router = useRouter();
 
     const handleSignup = async (e: React.FormEvent) => {
@@ -34,7 +33,7 @@ const SignupPage = () => {
 
             if (data.user) {
                 setMessage('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.');
-                
+
                 setTimeout(() => {
                     router.push('/login');
                 }, 3000);
@@ -67,7 +66,7 @@ const SignupPage = () => {
                             {message}
                         </div>
                     )}
-                    
+
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="username" className="block text-sm font-medium text-gray-700">
@@ -84,7 +83,7 @@ const SignupPage = () => {
                                 placeholder="seu_usuario"
                             />
                         </div>
-                        
+
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                                 Email
@@ -100,7 +99,7 @@ const SignupPage = () => {
                                 placeholder="seu@email.com"
                             />
                         </div>
-                        
+
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                 Senha

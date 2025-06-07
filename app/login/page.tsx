@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -36,7 +35,7 @@ const LoginPage = () => {
                 authStore.setUser(data.user);
                 setMessage('Login realizado com sucesso!');
                 console.log('Logged in');
-                
+
                 setTimeout(() => {
                     router.push('/admin');
                 }, 1000);
@@ -69,7 +68,7 @@ const LoginPage = () => {
                             {message}
                         </div>
                     )}
-                    
+
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
                             <label htmlFor="email" className="sr-only">

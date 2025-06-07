@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { fetchCreatorData } from '../utils/profile';
 import ProfilePicture from '../components/ProfilePicture';
@@ -9,8 +8,9 @@ interface PageProps {
     }>;
 }
 
-export default async function CreatorPage({ params }: PageProps) {
-    const { creatorSlug } = await params;
+export default async function CreatorPage({ params }: { params: Promise<{ creatorSlug: string }> }) {
+    const resolvedParams = await params;
+    const creatorSlug = resolvedParams.creatorSlug;
 
     const creatorData = await fetchCreatorData(creatorSlug);
 

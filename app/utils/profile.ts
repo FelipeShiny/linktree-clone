@@ -54,24 +54,59 @@ export async function getProfileByUserId(userId: string): Promise<Profile | null
     }
 }
 
-export async function updateProfile(userId: string, profileData: Partial<Profile>): Promise<boolean> {
-    try {
-        const { error } = await supabase
-            .from('profiles')
-            .update(profileData)
-            .eq('id', userId);
+export const updateProfile = async (userId: string, updates: Partial<Profile>) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('user_id', userId)
+    .select()
+    .single();
 
-        if (error) {
-            console.error('Error updating profile:', error);
-            return false;
-        }
+  return { data, error };
+};
 
-        return true;
-    } catch (error) {
-        console.error('Error in updateProfile:', error);
-        return false;
+export const uploadProfilePicture = async (userId: string, file: File) => {
+  try {
+    // Upload da imagem para o Supabase Storage
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}_avatar.${fileExt}`;
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, {
+        upsert: true
+      });
+
+    if (uploadError) {
+      throw uploadError;
     }
-}
+
+    // Obter a URL pública da imagem
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName);
+
+    // Atualizar o perfil com a nova URL da imagem
+    const { data: profileData, error: profileError } = await updateProfile(userId, {
+      avatar_url: publicUrl
+    });
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    return { 
+      data: { uploadData, profileData, publicUrl }, 
+      error: null 
+    };
+  } catch (error) {
+    console.error('Erro no upload da foto de perfil:', error);
+    return { 
+      data: null, 
+      error: error 
+    };
+  }
+};
 
 export async function fetchCreatorId(username: string): Promise<string | null> {
     try {

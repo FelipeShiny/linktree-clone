@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 
 interface ProfilePictureProps {
@@ -16,7 +15,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     className = "" 
 }) => {
     const defaultImage = "/assets/default-profile-picture.jpg";
-    
+
     return (
         <div className={`relative overflow-hidden rounded-full ${className}`} style={{ width: size, height: size }}>
             <Image

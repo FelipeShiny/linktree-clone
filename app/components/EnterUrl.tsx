@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -12,8 +11,8 @@ interface EnterUrlProps {
 const EnterUrl: React.FC<EnterUrlProps> = ({ setCreatorLinks }) => {
     const [title, setTitle] = useState('');
     const [url, setUrl] = useState('');
-    const [adding, setAdding] = useState(false);
-    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState<string>('');
 
     const handleAddLink = async () => {
         if (!title.trim() || !url.trim()) {
@@ -32,13 +31,13 @@ const EnterUrl: React.FC<EnterUrlProps> = ({ setCreatorLinks }) => {
             }
 
             const newLink = await addNewLink(user.id, title.trim(), url.trim());
-            
+
             if (newLink) {
                 setCreatorLinks(prev => [...prev, newLink]);
                 setTitle('');
                 setUrl('');
                 setMessage('Link adicionado com sucesso!');
-                
+
                 // Clear message after 3 seconds
                 setTimeout(() => setMessage(''), 3000);
             } else {
@@ -55,7 +54,7 @@ const EnterUrl: React.FC<EnterUrlProps> = ({ setCreatorLinks }) => {
     return (
         <div className="space-y-4 p-4 bg-white rounded-lg shadow">
             <h3 className="text-lg font-semibold">Adicionar Novo Link</h3>
-            
+
             <div>
                 <label className="block text-sm font-medium mb-1">Título</label>
                 <input
@@ -66,7 +65,7 @@ const EnterUrl: React.FC<EnterUrlProps> = ({ setCreatorLinks }) => {
                     className="w-full p-2 border border-gray-300 rounded-lg"
                 />
             </div>
-            
+
             <div>
                 <label className="block text-sm font-medium mb-1">URL</label>
                 <input
@@ -77,7 +76,7 @@ const EnterUrl: React.FC<EnterUrlProps> = ({ setCreatorLinks }) => {
                     className="w-full p-2 border border-gray-300 rounded-lg"
                 />
             </div>
-            
+
             <button
                 onClick={handleAddLink}
                 disabled={adding}
@@ -85,7 +84,7 @@ const EnterUrl: React.FC<EnterUrlProps> = ({ setCreatorLinks }) => {
             >
                 {adding ? 'Adicionando...' : 'Adicionar Link'}
             </button>
-            
+
             {message && (
                 <div className={`p-2 rounded text-sm ${
                     message.includes('sucesso') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
