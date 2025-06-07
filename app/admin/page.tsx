@@ -36,18 +36,14 @@ const Admin = () => {
 
     const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
     const [profilePicture, setProfilePicture] = useState<string>('');
+    const [isLinkLoading, setIsLinkLoading] = useState<boolean>(false);
+    
     useEffect(() => {
         if (creatorId) {
-            // Adicionado setIsLinkLoading às dependências para evitar loop/warning
             fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
             fetchProfilePicture(creatorId, setProfilePicture);
         }
-    }, [creatorId, setIsLinkLoading, setProfilePicture]); // Adicionado dependências
-
-    // DON'T ADD creatorLinks (infinite call)
-
-    // CORRIGIDO: useState incompleto
-    const [isLinkLoading, setIsLinkLoading] = useState<boolean>(false); // Adicionado inicialização
+    }, [creatorId]); // Removido dependências desnecessárias que causavam loopsação
 
     return (
         <div className="min-h-screen bg-gray-100 p-4">
