@@ -40,52 +40,58 @@ export const addNewLink = async (
     }
 };
 
-// **CORRIGIDO:** Lógica de upload da foto de perfil simplificada e robustecida.
+// Upload da foto de perfil com tratamento robusto
 export const uploadProfilePicture = async (
     creatorId: string,
     file: File,
     router: any,
 ) => {
     try {
+        console.log('Iniciando upload da foto de perfil para:', creatorId);
+        
         const filePath = `${creatorId}/avatar`;
 
-        // 1. Faz o upload (ou update, se já existir) da imagem no Storage.
+        // 1. Upload da imagem no Storage com upsert
         const { data: uploadData, error: uploadError } = await supabase.storage
             .from('avatars')
             .upload(filePath, file, {
                 cacheControl: '3600',
-                upsert: true, // Cria se não existe, atualiza se já existe.
+                upsert: true,
             });
 
         if (uploadError) {
-            throw new Error(`Falha no upload da foto de perfil: ${uploadError.message}`);
+            console.error('Erro no upload:', uploadError);
+            throw new Error(`Falha no upload: ${uploadError.message}`);
         }
-        console.log('Foto de perfil enviada com sucesso:', uploadData);
+        
+        console.log('Upload realizado com sucesso:', uploadData);
 
-        // 2. Pega a URL pública da imagem que acabamos de enviar.
+        // 2. Gerar URL pública
         const { data: publicUrlData } = supabase.storage
             .from('avatars')
             .getPublicUrl(filePath);
 
         const publicUrl = publicUrlData.publicUrl;
+        console.log('URL pública gerada:', publicUrl);
 
-        // 3. Atualiza a coluna 'avatar_url' na tabela 'profiles' com a nova URL.
+        // 3. Atualizar a tabela profiles
         const { error: updateError } = await supabase
             .from('profiles')
-            .update({ avatar_url: publicUrl }) // Usa a coluna 'avatar_url' que criamos.
+            .update({ avatar_url: publicUrl })
             .eq('id', creatorId);
 
         if (updateError) {
-            throw new Error(`Falha ao atualizar a URL da foto no perfil: ${updateError.message}`);
+            console.error('Erro ao atualizar perfil:', updateError);
+            throw new Error(`Falha ao atualizar perfil: ${updateError.message}`);
         }
 
-        console.log('URL da foto de perfil atualizada com sucesso no banco de dados.');
-
-        // Recarrega a página para mostrar a nova foto.
-        router.refresh();
+        console.log('Perfil atualizado com sucesso no banco de dados');
+        
+        return publicUrl;
 
     } catch (error) {
-        console.error('Erro no processo de upload da foto de perfil:', error);
+        console.error('Erro completo no processo de upload:', error);
+        throw error;
     }
 };
 
@@ -135,18 +141,46 @@ export const fetchCreatorData = async (creatorSlug: string) => {
     }
 };
 
-// **CORRIGIDO:** Função utilitária para gerar a URL da imagem de perfil.
+// Função para gerar URL da imagem de perfil com bust de cache
 export const getProfilePictureUrl = (creatorId: string) => {
-    if (!creatorId) return '/assets/default-profile-picture.jpg'; // Imagem padrão
+    if (!creatorId) {
+        console.log('CreatorId não fornecido, usando imagem padrão');
+        return '/assets/default-profile-picture.jpg';
+    }
 
-    // Usa a variável de ambiente e o bucket 'avatars'.
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!supabaseUrl) {
-        console.error('NEXT_PUBLIC_SUPABASE_URL not configured');
+        console.error('NEXT_PUBLIC_SUPABASE_URL não configurada');
         return '/assets/default-profile-picture.jpg';
     }
     
-    return `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`;
+    // Adicionar timestamp para quebrar cache
+    const timestamp = Date.now();
+    const url = `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar?v=${timestamp}`;
+    
+    console.log('URL da imagem gerada:', url);
+    return url;
+};
+
+// Função para buscar dados do perfil incluindo avatar_url
+export const fetchProfileWithAvatar = async (creatorId: string) => {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, username, avatar_url')
+            .eq('id', creatorId)
+            .single();
+
+        if (error) {
+            console.error('Erro ao buscar perfil:', error);
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Erro em fetchProfileWithAvatar:', error);
+        return null;
+    }
 };
 
 export const fetchLinks = async (

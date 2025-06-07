@@ -5,6 +5,7 @@ import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
 import ProfilePicture from '../components/ProfilePicture';
 import { fetchLinks, getProfilePictureUrl } from '../utils/profile';
+import supabase from '../utils/supabaseClient';
 import { Link } from '../types/linkTypes';
 import { Eye } from 'lucide-react';
 import NextLink from 'next/link';
@@ -44,10 +45,34 @@ const Admin = () => {
     useEffect(() => {
         if (creatorId) {
             fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
-            const url = getProfilePictureUrl(creatorId);
-            setProfilePicture(url);
+            
+            // Buscar dados do perfil incluindo avatar_url
+            const loadProfileData = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('avatar_url')
+                        .eq('id', creatorId)
+                        .single();
+
+                    if (data?.avatar_url) {
+                        // Usar a URL salva no banco de dados
+                        setProfilePicture(data.avatar_url);
+                    } else {
+                        // Fallback para a URL gerada
+                        const url = getProfilePictureUrl(creatorId);
+                        setProfilePicture(url);
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar dados do perfil:', error);
+                    const url = getProfilePictureUrl(creatorId);
+                    setProfilePicture(url);
+                }
+            };
+            
+            loadProfileData();
         }
-    }, [creatorId, setIsLinkLoading, setProfilePicture]);
+    }, [creatorId]);
 
     return (
         <div className="min-h-screen bg-gray-100 p-4">
