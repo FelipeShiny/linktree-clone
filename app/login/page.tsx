@@ -1,118 +1,130 @@
+
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { observer } from 'mobx-react';
-import AuthStore from '../interfaces/AuthStore';
-import Link from 'next/link';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { signInWithEmail } from '../utils/supabaseClient';
+import { authStore } from '../interfaces/AuthStore';
 
-const Login = observer(() => {
+const LoginPage = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
     const router = useRouter();
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [email, setEmail] = useState<string | undefined>();
-    const [password, setPassword] = useState<string | undefined>();
 
-    useEffect(() => {
-        if (AuthStore.isAuthenticated) {
-            router.push('/admin');
-        }
-    }, [router]);
-
-    async function signInWithEmail(e: any) {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
+        setMessage('');
 
         try {
-            if (email && password) {
-                await AuthStore.signInWithEmail(email, password);
+            const { data, error } = await signInWithEmail(email, password);
 
-                if (AuthStore.isAuthenticated) {
-                    console.log('Logged in');
-                    setIsLoggedIn(true);
-                    const interval = setInterval(() => {
-                        if (AuthStore.authUsername !== '') {
-                            clearInterval(interval); // Stop the interval once isAuthenticated becomes true
-                            router.push('/admin');
-                        }
-                    }, 200);
+            if (error) {
+                if (error.message.includes('Invalid login credentials')) {
+                    setMessage('E-mail ou senha incorretos.');
+                } else if (error.message.includes('Email not confirmed')) {
+                    setMessage('Conta não confirmada. Verifique seu e-mail.');
+                } else {
+                    setMessage(`Erro ao fazer login: ${error.message}`);
                 }
+                return;
+            }
+
+            if (data.user) {
+                authStore.setUser(data.user);
+                setMessage('Login realizado com sucesso!');
+                console.log('Logged in');
+                
+                setTimeout(() => {
+                    router.push('/admin');
+                }, 1000);
             }
         } catch (error) {
-            console.log('error', error);
+            console.error('Login error:', error);
+            setMessage('Erro inesperado ao fazer login.');
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     return (
-        <div className="flex items-center justify-center py-10">
-            {!isLoggedIn ? (
-                <form className="flex flex-col gap-3 rounded-xl border-black bg-white p-10 shadow-2xl">
-                    <h2>Login</h2>
-                    <div className="items-left flex flex-col">
-                        <label
-                            htmlFor="email"
-                            className="block text-sm font-medium text-gray-700"
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8">
+                <div>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                        Faça login em sua conta
+                    </h2>
+                </div>
+                <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+                    {message && (
+                        <div 
+                            className={`p-3 rounded ${
+                                message.includes('sucesso') 
+                                    ? 'bg-green-100 text-green-700 border border-green-300' 
+                                    : 'bg-red-100 text-red-700 border border-red-300'
+                            }`}
                         >
-                            Email
-                        </label>
-                        <div className="mt-1">
+                            {message}
+                        </div>
+                    )}
+                    
+                    <div className="rounded-md shadow-sm -space-y-px">
+                        <div>
+                            <label htmlFor="email" className="sr-only">
+                                Email
+                            </label>
                             <input
-                                type="email"
-                                name="email"
                                 id="email"
-                                className="block w-full rounded-md border-gray-300 bg-[#f3f3f1] shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                                placeholder="you@example.com"
+                                name="email"
+                                type="email"
+                                required
+                                value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                placeholder="Endereço de email"
                             />
                         </div>
-                    </div>
-                    <div className="items-left flex flex-col">
-                        <label
-                            htmlFor="password"
-                            className="block text-sm font-medium text-gray-700"
-                        >
-                            Password
-                        </label>
-                        <div className="mt-1">
+                        <div>
+                            <label htmlFor="password" className="sr-only">
+                                Senha
+                            </label>
                             <input
-                                type="password"
-                                name="password"
                                 id="password"
-                                className="block w-full rounded-md border-gray-300  bg-[#f3f3f1] shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                                placeholder="password"
+                                name="password"
+                                type="password"
+                                required
+                                value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                placeholder="Senha"
                             />
                         </div>
                     </div>
-                    <button
-                        type="submit"
-                        className="rounded-lg border-2 bg-[#222222] px-4 py-1 text-white hover:opacity-80"
-                        onClick={signInWithEmail}
-                    >
-                        Login
-                    </button>
-                    <div className="flex items-center gap-3">
-                        <h4>Need account?</h4>
-                        <Link href={'/signup'}>
-                            <button>
-                                <p>Sign Up</p>
-                            </button>
-                        </Link>
+
+                    <div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                        >
+                            {loading ? 'Entrando...' : 'Entrar'}
+                        </button>
                     </div>
-                    <div className="flex flex-col rounded-xl bg-[#222222] p-5 md:mx-auto ">
-                        <h5 className="font-semibold text-white">
-                            Login credentials for test_user
-                        </h5>
-                        <p className="text-white">
-                            Email: anwari.fikri@gmail.com
+
+                    <div className="text-center">
+                        <p className="text-sm text-gray-600">
+                            Não tem uma conta?{' '}
+                            <a href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+                                Cadastre-se
+                            </a>
                         </p>
-                        <p className="text-white">Password: test_user123</p>
                     </div>
                 </form>
-            ) : (
-                <LoadingSpinner />
-            )}
+            </div>
         </div>
     );
-});
+};
 
-export default Login;
+export default LoginPage;

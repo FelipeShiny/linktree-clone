@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { fetchCreatorData } from '../utils/profile';
-import CreatorLinks from '../components/CreatorLinks';
 import ProfilePicture from '../components/ProfilePicture';
 
 interface PageProps {
@@ -45,7 +44,25 @@ export default async function CreatorPage({ params }: PageProps) {
                     )}
                 </div>
 
-                <CreatorLinks links={links} />
+                <div className="space-y-3">
+                    {links && links.length > 0 ? (
+                        links.map((link) => (
+                            <a
+                                key={link.id}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block w-full p-4 bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200 text-center"
+                            >
+                                <span className="text-gray-800 font-medium">
+                                    {link.title}
+                                </span>
+                            </a>
+                        ))
+                    ) : (
+                        <p className="text-gray-500">Nenhum link encontrado</p>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -1,12 +1,9 @@
 
-'use client';
-
 import React from 'react';
 import Image from 'next/image';
-import { getProfilePictureUrl } from '../utils/profile';
 
 interface ProfilePictureProps {
-    src?: string;
+    src?: string | null;
     alt: string;
     size?: number;
     className?: string;
@@ -16,20 +13,18 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     src, 
     alt, 
     size = 80, 
-    className = '' 
+    className = "" 
 }) => {
-    const defaultImage = '/assets/default-profile-picture.jpg';
-    const imageUrl = src ? getProfilePictureUrl(src) : defaultImage;
-
+    const defaultImage = "/assets/default-profile-picture.jpg";
+    
     return (
-        <div className={`relative ${className}`} style={{ width: size, height: size }}>
+        <div className={`relative overflow-hidden rounded-full ${className}`} style={{ width: size, height: size }}>
             <Image
-                src={imageUrl}
+                src={src || defaultImage}
                 alt={alt}
                 width={size}
                 height={size}
-                className="rounded-full object-cover"
-                unoptimized
+                className="object-cover"
                 onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = defaultImage;

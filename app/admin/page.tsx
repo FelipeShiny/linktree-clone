@@ -1,28 +1,16 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { observer } from 'mobx-react-lite';
+import React, { useState, useEffect } from 'react';
+import { observer } from 'mobx-react';
 import { authStore } from '../interfaces/AuthStore';
-import { getUser, updateProfile, getProfileByUserId } from '../utils/profile';
-import { createBrowserClient } from '@supabase/ssr';
-import EditableLinkItem from '../components/EditableLinkItem';
-import EnterUrl from '../components/EnterUrl';
-import ChangeProfilePictureDialog from '../components/ChangeProfilePictureDialog';
+import { getUser, getProfileByUserId, updateProfile, Profile } from '../utils/profile';
 import ProfilePicture from '../components/ProfilePicture';
-import { Link } from '../types/linkTypes';
-
-interface ProfileData {
-    username: string;
-    full_name: string;
-    bio: string;
-    avatar_url: string;
-}
+import ChangeProfilePictureDialog from '../components/ChangeProfilePictureDialog';
 
 const AdminPage = observer(() => {
-    const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
     const [loading, setLoading] = useState(true);
-    const [profileData, setProfileData] = useState<ProfileData>({
+    const [profileData, setProfileData] = useState<Partial<Profile>>({
         username: '',
         full_name: '',
         bio: '',
@@ -32,42 +20,19 @@ const AdminPage = observer(() => {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
     useEffect(() => {
-        const loadUserData = async () => {
-            try {
-                setLoading(true);
-                
-                // Wait for AuthStore to be initialized
-                if (!authStore.isAuthenticated) {
-                    await new Promise(resolve => {
-                        const interval = setInterval(() => {
-                            if (authStore.isAuthenticated) {
-                                clearInterval(interval);
-                                resolve(true);
-                            }
-                        }, 100);
-                        
-                        // Timeout after 5 seconds
-                        setTimeout(() => {
-                            clearInterval(interval);
-                            resolve(false);
-                        }, 5000);
-                    });
-                }
+        loadUserProfile();
+    }, []);
 
-                const user = await getUser();
-                if (!user) {
-                    console.error('No user found');
-                    return;
-                }
-
-                // Fetch profile data
+    const loadUserProfile = async () => {
+        try {
+            setLoading(true);
+            const user = await getUser();
+            
+            if (user) {
+                authStore.setUser(user);
                 const profile = await getProfileByUserId(user.id);
+                
                 if (profile) {
                     setProfileData({
                         username: profile.username || '',
@@ -76,28 +41,14 @@ const AdminPage = observer(() => {
                         avatar_url: profile.avatar_url || ''
                     });
                 }
-
-                // Fetch links
-                const { data: links, error } = await supabase
-                    .from('links')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: true });
-
-                if (error) {
-                    console.error('Error fetching links:', error);
-                } else {
-                    setCreatorLinks(links || []);
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-            } finally {
-                setLoading(false);
             }
-        };
-
-        loadUserData();
-    }, [supabase]);
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            setMessage('Erro ao carregar perfil');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSaveProfile = async () => {
         try {
@@ -108,11 +59,14 @@ const AdminPage = observer(() => {
                 return;
             }
 
-            await updateProfile(user.id, profileData);
-            setMessage('Perfil atualizado com sucesso!');
-            setEditingProfile(false);
+            const success = await updateProfile(user.id, profileData);
+            if (success) {
+                setMessage('Perfil atualizado com sucesso!');
+                setEditingProfile(false);
+            } else {
+                setMessage('Erro ao salvar perfil');
+            }
             
-            // Clear message after 3 seconds
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
             console.error('Error saving profile:', error);
@@ -124,11 +78,13 @@ const AdminPage = observer(() => {
 
     const handleCancelEdit = () => {
         setEditingProfile(false);
-        // Reset form data if needed
+        loadUserProfile(); // Reload original data
     };
 
     const handleProfilePictureUpdate = (newAvatarUrl: string) => {
         setProfileData(prev => ({ ...prev, avatar_url: newAvatarUrl }));
+        setMessage('Foto de perfil atualizada com sucesso!');
+        setTimeout(() => setMessage(''), 3000);
     };
 
     if (loading) {
@@ -151,6 +107,19 @@ const AdminPage = observer(() => {
         <div className="mx-auto w-[90%] max-w-4xl">
             <h1 className="text-3xl font-bold py-10">Painel Administrativo</h1>
             
+            {/* Message Display */}
+            {message && (
+                <div 
+                    className={`mb-4 p-3 rounded ${
+                        message.includes('sucesso') || message.includes('atualizada') 
+                            ? 'bg-green-100 text-green-700 border border-green-300' 
+                            : 'bg-red-100 text-red-700 border border-red-300'
+                    }`}
+                >
+                    {message}
+                </div>
+            )}
+
             {/* Profile Section */}
             <section className="mb-8 p-6 bg-white rounded-lg shadow">
                 <div className="flex items-center justify-between mb-4">
@@ -158,106 +127,118 @@ const AdminPage = observer(() => {
                     {!editingProfile && (
                         <button 
                             onClick={() => setEditingProfile(true)}
-                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
                         >
                             Editar Perfil
                         </button>
                     )}
                 </div>
 
-                {message && (
-                    <div className={`mb-4 p-3 rounded ${message.includes('sucesso') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {message}
-                    </div>
-                )}
-
-                <div className="flex items-start gap-6">
-                    <div className="flex flex-col items-center">
-                        <ProfilePicture 
-                            src={profileData.avatar_url} 
+                <div className="flex flex-col md:flex-row gap-6">
+                    {/* Profile Picture */}
+                    <div className="flex flex-col items-center space-y-4">
+                        <ProfilePicture
+                            src={profileData.avatar_url}
                             alt="Foto de perfil"
                             size={120}
-                            className="mb-2"
                         />
-                        <ChangeProfilePictureDialog onUpdate={handleProfilePictureUpdate} />
+                        <ChangeProfilePictureDialog onImageUpdate={handleProfilePictureUpdate} />
                     </div>
 
-                    {editingProfile ? (
-                        <div className="flex-1 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Nome de Usuário</label>
-                                <input
-                                    type="text"
-                                    value={profileData.username}
-                                    onChange={(e) => setProfileData({...profileData, username: e.target.value})}
-                                    className="w-full p-2 border border-gray-300 rounded-lg"
-                                    placeholder="Seu nome de usuário"
-                                />
+                    {/* Profile Form */}
+                    <div className="flex-1 space-y-4">
+                        {editingProfile ? (
+                            <div className="space-y-4">
+                                {/* Username */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Nome de Usuário
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={profileData.username || ''}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="seu_usuario"
+                                    />
+                                </div>
+
+                                {/* Full Name */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Nome Completo
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={profileData.full_name || ''}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))}
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Seu Nome Completo"
+                                    />
+                                </div>
+
+                                {/* Bio */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Biografia
+                                    </label>
+                                    <textarea
+                                        value={profileData.bio || ''}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        rows={3}
+                                        placeholder="Conte um pouco sobre você..."
+                                        maxLength={160}
+                                    />
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {(profileData.bio || '').length}/160 caracteres
+                                    </p>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={handleSaveProfile}
+                                        disabled={saving}
+                                        className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:opacity-50 transition-colors"
+                                    >
+                                        {saving ? 'Salvando...' : 'Salvar Alterações'}
+                                    </button>
+                                    <button
+                                        onClick={handleCancelEdit}
+                                        disabled={saving}
+                                        className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 disabled:opacity-50 transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Nome Completo</label>
-                                <input
-                                    type="text"
-                                    value={profileData.full_name}
-                                    onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
-                                    className="w-full p-2 border border-gray-300 rounded-lg"
-                                    placeholder="Seu nome completo"
-                                />
+                        ) : (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Nome de Usuário</label>
+                                    <p className="text-lg">@{profileData.username || 'Não definido'}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
+                                    <p className="text-lg">{profileData.full_name || 'Não definido'}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Biografia</label>
+                                    <p className="text-lg">{profileData.bio || 'Nenhuma biografia definida'}</p>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Biografia</label>
-                                <textarea
-                                    value={profileData.bio}
-                                    onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
-                                    className="w-full p-2 border border-gray-300 rounded-lg"
-                                    placeholder="Conte um pouco sobre você"
-                                    rows={3}
-                                />
-                            </div>
-                            <div className="flex gap-2">
-                                <button 
-                                    onClick={handleSaveProfile}
-                                    disabled={saving}
-                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50"
-                                >
-                                    {saving ? 'Salvando...' : 'Salvar'}
-                                </button>
-                                <button 
-                                    onClick={handleCancelEdit}
-                                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex-1">
-                            <div className="space-y-2">
-                                <h3 className="text-xl font-semibold">{profileData.full_name || 'Nome não definido'}</h3>
-                                <p className="text-gray-600">@{profileData.username || 'username'}</p>
-                                <p className="text-gray-800">{profileData.bio || 'Biografia não definida'}</p>
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </section>
 
-            {/* Links Section */}
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold mb-4">Seus Links</h2>
-                <div className="space-y-4">
-                    {creatorLinks.map((link) => (
-                        <EditableLinkItem
-                            key={link.id}
-                            link={link}
-                            creatorLinks={creatorLinks}
-                            setCreatorLinks={setCreatorLinks}
-                        />
-                    ))}
-                </div>
-                <div className="mt-6">
-                    <EnterUrl setCreatorLinks={setCreatorLinks} />
-                </div>
+            {/* Links Management Section */}
+            <section className="mb-8 p-6 bg-white rounded-lg shadow">
+                <h2 className="text-2xl font-bold mb-4">Gerenciar Links</h2>
+                <p className="text-gray-600">
+                    Funcionalidade de gerenciamento de links será implementada em breve.
+                </p>
             </section>
         </div>
     );

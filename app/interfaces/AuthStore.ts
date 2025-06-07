@@ -1,35 +1,24 @@
 import { makeAutoObservable } from 'mobx';
-import { createBrowserClient } from '@supabase/ssr';
+import { User } from '@supabase/supabase-js';
 
 class AuthStore {
-    user: any = null;
+    user: User | null = null;
     isAuthenticated: boolean = false;
     loading: boolean = true;
-    supabase: any;
 
     constructor() {
         makeAutoObservable(this);
-        this.supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        this.initializeAuth();
     }
 
-    async initializeAuth() {
-        try {
-            const { data: { user } } = await this.supabase.auth.getUser();
-            this.setUser(user);
-        } catch (error) {
-            console.error('Error initializing auth:', error);
-        } finally {
-            this.setLoading(false);
-        }
-    }
-
-    setUser(user: any) {
+    setUser(user: User | null) {
         this.user = user;
         this.isAuthenticated = !!user;
+        this.loading = false;
+    }
+
+    logout() {
+        this.user = null;
+        this.isAuthenticated = false;
     }
 
     setLoading(loading: boolean) {
@@ -38,7 +27,12 @@ class AuthStore {
 
     async login(email: string, password: string) {
         try {
-            const { data, error } = await this.supabase.auth.signInWithPassword({
+            const {createBrowserClient} = await import('@supabase/ssr');
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password
             });
@@ -56,7 +50,12 @@ class AuthStore {
 
     async signup(email: string, password: string, username: string, fullName: string) {
         try {
-            const { data, error } = await this.supabase.auth.signUp({
+            const {createBrowserClient} = await import('@supabase/ssr');
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
+            const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -76,18 +75,38 @@ class AuthStore {
         }
     }
 
-    async logout() {
+    async logoutSupabase() {
         try {
-            await this.supabase.auth.signOut();
-            this.setUser(null);
+            const {createBrowserClient} = await import('@supabase/ssr');
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
+            await supabase.auth.signOut();
+            this.logout();
             return { success: true, message: 'Logout realizado com sucesso!' };
         } catch (error: any) {
             console.error('Logout error:', error);
             return { success: false, message: 'Erro ao fazer logout' };
         }
     }
+
+    async initializeAuth() {
+        try {
+            const {createBrowserClient} = await import('@supabase/ssr');
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
+            const { data: { user } } = await supabase.auth.getUser();
+            this.setUser(user);
+        } catch (error) {
+            console.error('Error initializing auth:', error);
+        } finally {
+            this.setLoading(true);
+        }
+    }
 }
 
-const authStore = new AuthStore();
-export default authStore;
-export { authStore };
+export const authStore = new AuthStore();
+export default AuthStore;

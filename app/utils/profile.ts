@@ -1,63 +1,119 @@
-
-import supabase from './supabaseClient';
-import { Link } from '../types/linkTypes';
+import { supabase } from './supabaseClient';
+import { User } from '@supabase/supabase-js';
 
 export interface Profile {
     id: string;
-    user_id: string;
     username: string;
-    full_name: string;
-    bio: string;
-    avatar_url: string;
-    created_at: string;
-    updated_at: string;
+    full_name?: string;
+    bio?: string;
+    avatar_url?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
-export const getUser = async () => {
+export interface Link {
+    id: string;
+    user_id: string;
+    title: string;
+    url: string;
+    order_index?: number;
+    created_at?: string;
+}
+
+export async function getUser(): Promise<User | null> {
     try {
         const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) throw error;
+        if (error) {
+            console.error('Error getting user:', error);
+            return null;
+        }
         return user;
     } catch (error) {
-        console.error('Error getting user:', error);
+        console.error('Error in getUser:', error);
         return null;
     }
-};
+}
 
-export const getProfileByUserId = async (userId: string): Promise<Profile | null> => {
+export async function getProfileByUserId(userId: string): Promise<Profile | null> {
     try {
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
-            .eq('user_id', userId)
+            .eq('id', userId)
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Error fetching profile:', error);
+            return null;
+        }
+
         return data;
     } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error in getProfileByUserId:', error);
         return null;
     }
-};
+}
 
-export const updateProfile = async (userId: string, updates: Partial<Profile>) => {
+export async function updateProfile(userId: string, profileData: Partial<Profile>): Promise<boolean> {
+    try {
+        const { error } = await supabase
+            .from('profiles')
+            .update(profileData)
+            .eq('id', userId);
+
+        if (error) {
+            console.error('Error updating profile:', error);
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error in updateProfile:', error);
+        return false;
+    }
+}
+
+export async function fetchCreatorId(username: string): Promise<string | null> {
     try {
         const { data, error } = await supabase
             .from('profiles')
-            .update(updates)
-            .eq('user_id', userId)
-            .select()
+            .select('id')
+            .eq('username', username)
             .single();
 
-        if (error) throw error;
-        return data;
-    } catch (error) {
-        console.error('Error updating profile:', error);
-        throw error;
-    }
-};
+        if (error || !data) {
+            console.error('Error fetching creator ID:', error);
+            return null;
+        }
 
-export const fetchCreatorData = async (username: string) => {
+        return data.id;
+    } catch (error) {
+        console.error('Error in fetchCreatorId:', error);
+        return null;
+    }
+}
+
+export async function fetchLinks(userId: string): Promise<Link[]> {
+    try {
+        const { data, error } = await supabase
+            .from('links')
+            .select('*')
+            .eq('user_id', userId)
+            .order('order_index', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching links:', error);
+            return [];
+        }
+
+        return data || [];
+    } catch (error) {
+        console.error('Error in fetchLinks:', error);
+        return [];
+    }
+}
+
+export async function fetchCreatorData(username: string) {
     try {
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -65,143 +121,40 @@ export const fetchCreatorData = async (username: string) => {
             .eq('username', username)
             .single();
 
-        if (profileError) throw profileError;
+        if (profileError || !profile) {
+            console.error('Error fetching profile:', profileError);
+            return null;
+        }
 
         const { data: links, error: linksError } = await supabase
             .from('links')
             .select('*')
-            .eq('user_id', profile.user_id)
-            .order('created_at', { ascending: true });
+            .eq('user_id', profile.id)
+            .order('order_index', { ascending: true });
 
-        if (linksError) throw linksError;
+        if (linksError) {
+            console.error('Error fetching links:', linksError);
+            return { profile, links: [] };
+        }
 
-        return { profile, links };
+        return { profile, links: links || [] };
     } catch (error) {
-        console.error('Error fetching creator data:', error);
+        console.error('Error in fetchCreatorData:', error);
         return null;
     }
-};
+}
 
-export const fetchCreatorId = async (username: string) => {
-    try {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('user_id')
-            .eq('username', username)
-            .single();
-
-        if (error) throw error;
-        return data.user_id;
-    } catch (error) {
-        console.error('Error fetching creator ID:', error);
-        return null;
+export function getProfilePictureUrl(avatarUrl?: string | null): string {
+    if (!avatarUrl) {
+        return '/assets/default-profile-picture.jpg';
     }
-};
 
-export const fetchLinks = async (userId: string): Promise<Link[]> => {
-    try {
-        const { data, error } = await supabase
-            .from('links')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: true });
-
-        if (error) throw error;
-        return data || [];
-    } catch (error) {
-        console.error('Error fetching links:', error);
-        return [];
-    }
-};
-
-export const getProfilePictureUrl = (avatarUrl: string | null): string => {
-    if (!avatarUrl) return '/assets/default-profile-picture.jpg';
-    
     // Se já é uma URL completa, retorna como está
-    if (avatarUrl.startsWith('http')) return avatarUrl;
-    
-    // Se é um caminho do storage, constrói a URL correta
-    if (avatarUrl.startsWith('avatars/')) {
-        const { data } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(avatarUrl);
-        return data.publicUrl;
+    if (avatarUrl.startsWith('http')) {
+        return avatarUrl;
     }
-    
-    return avatarUrl;
-};
 
-export const addNewLink = async (userId: string, title: string, url: string): Promise<Link | null> => {
-    try {
-        const { data, error } = await supabase
-            .from('links')
-            .insert({
-                user_id: userId,
-                title,
-                url
-            })
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
-    } catch (error) {
-        console.error('Error adding new link:', error);
-        return null;
-    }
-};
-
-export const updateLink = async (linkId: string, updates: { title?: string; url?: string }) => {
-    try {
-        const { data, error } = await supabase
-            .from('links')
-            .update(updates)
-            .eq('id', linkId)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
-    } catch (error) {
-        console.error('Error updating link:', error);
-        return null;
-    }
-};
-
-export const deleteLink = async (linkId: string): Promise<boolean> => {
-    try {
-        const { error } = await supabase
-            .from('links')
-            .delete()
-            .eq('id', linkId);
-
-        if (error) throw error;
-        return true;
-    } catch (error) {
-        console.error('Error deleting link:', error);
-        return false;
-    }
-};
-
-export const uploadProfilePicture = async (userId: string, file: File): Promise<string | null> => {
-    try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${userId}-${Date.now()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-
-        return data.publicUrl;
-    } catch (error) {
-        console.error('Error uploading profile picture:', error);
-        return null;
-    }
-};
+    // Se é um caminho relativo do Supabase Storage
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return `${supabaseUrl}/storage/v1/object/public/avatars/${avatarUrl}`;
+}

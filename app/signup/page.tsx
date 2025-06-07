@@ -1,152 +1,146 @@
+
 'use client';
 
 import React, { useState } from 'react';
-import supabase from '../utils/supabaseClient';
-import { observer } from 'mobx-react';
-import AuthStore from '../interfaces/AuthStore';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { signUpWithEmail } from '../utils/supabaseClient';
 
-const SignUp = observer(() => {
+const SignupPage = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
     const router = useRouter();
 
-    const [email, setEmail] = useState<string | undefined>();
-    const [password, setPassword] = useState<string | undefined>();
-    const [username, setUsername] = useState<string | undefined>();
-
-    async function checkUsernameTaken() {
-        if (username) {
-            try {
-                console.log('Checking username availability for:', username);
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('username')
-                    .eq('username', username)
-                    .maybeSingle();
-
-                if (error) {
-                    console.error('Error:', error);
-                    return false;
-                }
-
-                if (data) {
-                    console.log('Username already taken:', data);
-                    return true;
-                }
-
-                return false;
-            } catch (error) {
-                console.error('Error checking username:', error);
-                return false;
-            }
-        }
-    }
-
-    async function signUp(e: any) {
+    const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
+        setMessage('');
 
-        const isUsernameTaken = await checkUsernameTaken();
+        try {
+            const { data, error } = await signUpWithEmail(email, password, username);
 
-        if (!isUsernameTaken) {
-            console.log('You can signup!');
-            try {
-                if (email && password && username) {
-                    await AuthStore.signUpWithEmail(email, password, username);
-                    console.log('Sign up successful');
-                    router.push(`/${username}`);
+            if (error) {
+                if (error.message.includes('already registered')) {
+                    setMessage('Este e-mail já está em uso.');
+                } else if (error.message.includes('username')) {
+                    setMessage('Nome de usuário já em uso.');
+                } else {
+                    setMessage(`Erro ao cadastrar: ${error.message}`);
                 }
-            } catch (error) {
-                console.log('Signup error:', error);
+                return;
             }
-            // Proceed with signup logic here
-        } else {
-            console.log('username is taken. choose another one');
+
+            if (data.user) {
+                setMessage('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.');
+                
+                setTimeout(() => {
+                    router.push('/login');
+                }, 3000);
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            setMessage('Erro inesperado ao cadastrar.');
+        } finally {
+            setLoading(false);
         }
-    }
-
-    // async function signUp() {
-    //     await setUsernameTaken(checkUsernameTaken());
-
-    // }
+    };
 
     return (
-        <div className="flex items-center justify-center py-10">
-            <form className="flex flex-col gap-3 rounded-xl border-black bg-white p-10 shadow-2xl">
-                <h2>Sign Up</h2>
-                <div className="items-left flex flex-col">
-                    <label
-                        htmlFor="username"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        Username
-                    </label>
-                    <div className="mt-1">
-                        <input
-                            type="text"
-                            name="username"
-                            id="username"
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                            placeholder="username"
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </div>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8">
+                <div>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                        Crie sua conta
+                    </h2>
                 </div>
-                <div className="items-left flex flex-col">
-                    <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        Email
-                    </label>
-                    <div className="mt-1">
-                        <input
-                            type="email"
-                            name="email"
-                            id="email"
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                            placeholder="you@example.com"
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+                <form className="mt-8 space-y-6" onSubmit={handleSignup}>
+                    {message && (
+                        <div 
+                            className={`p-3 rounded ${
+                                message.includes('sucesso') 
+                                    ? 'bg-green-100 text-green-700 border border-green-300' 
+                                    : 'bg-red-100 text-red-700 border border-red-300'
+                            }`}
+                        >
+                            {message}
+                        </div>
+                    )}
+                    
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                                Nome de Usuário
+                            </label>
+                            <input
+                                id="username"
+                                name="username"
+                                type="text"
+                                required
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="seu_usuario"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                Email
+                            </label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="seu@email.com"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                                Senha
+                            </label>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="Sua senha"
+                                minLength={6}
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className="items-left flex flex-col">
-                    <label
-                        htmlFor="password"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        Password
-                    </label>
-                    <div className="mt-1">
-                        <input
-                            type="password"
-                            name="password"
-                            id="password"
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 "
-                            placeholder="password"
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                </div>
-                <button
-                    className="mt-4 rounded-lg border-2 bg-black px-4 py-1 text-white hover:border-black hover:bg-white hover:text-black"
-                    onClick={signUp}
-                >
-                    Sign Up
-                </button>
-                <div className="flex items-center gap-3">
-                    <h4>Already have an account?</h4>
-                    <Link href={'/login'}>
-                        <button>
-                            <p>Login</p>
+
+                    <div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                        >
+                            {loading ? 'Cadastrando...' : 'Cadastrar'}
                         </button>
-                    </Link>
-                </div>
-            </form>
+                    </div>
+
+                    <div className="text-center">
+                        <p className="text-sm text-gray-600">
+                            Já tem uma conta?{' '}
+                            <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+                                Faça login
+                            </a>
+                        </p>
+                    </div>
+                </form>
+            </div>
         </div>
     );
-});
+};
 
-export default SignUp;
+export default SignupPage;

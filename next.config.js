@@ -13,6 +13,12 @@ const nextConfig = {
         ],
         unoptimized: true,
     },
+    experimental: {
+        allowedDevOrigins: [
+            '*.replit.dev',
+            '*.picard.replit.dev'
+        ],
+    },
 }
 
 module.exports = nextConfig
