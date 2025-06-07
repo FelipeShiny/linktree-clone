@@ -1,0 +1,26 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js no Replit.
+Você (Replit AI) fez refatorações recentes que introduziram novos erros de compilação.
+O aplicativo agora está falhando ao compilar a página de perfil público.
+
+# Problema Crítico ATUAL (Prioridade Absoluta da IA):
+
+1.  **`Error: <CreatorPage> is an async Client component. Only Server Components can be async at the moment.`**
+    * **Local:** `app/[creatorSlug]/page.tsx` (linha 50).
+    * **Causa:** O componente `CreatorPage` (que é um Client Component, marcado com `'use client'`) está definido como uma função `async`. Client Components no Next.js 13+ não podem ser `async`.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Prioridade Absoluta:** Resolver o erro `async Client component` em `app/[creatorSlug]/page.tsx`.
+    * **Modifique `app/[creatorSlug]/page.tsx`:**
+        * **Remova a palavra-chave `async`** da declaração da função do componente `CreatorPage`.
+        * Se houver operações assíncronas (como `await fetchCreatorId(creatorSlug);`) dentro do componente, mova-as para um `useEffect` (se já não estiverem) ou para uma função auxiliar que seja chamada dentro de um `useEffect`.
+        * Adapte o código para que o acesso a `params.creatorSlug` seja feito dentro do `useEffect` ou de forma síncrona na renderização, se necessário (o aviso sobre `params` ser uma Promise já foi tratado, mas aqui precisamos garantir que não seja a causa do `async`).
+    * O objetivo é que o componente `CreatorPage` não seja `async`, mas ainda consiga buscar os dados necessários.
+
+2.  **Após a correção deste erro, explique as mudanças feitas e por que elas resolvem o problema,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- Foque APENAS em resolver este erro `async Client component`.
+- Não altere outras funcionalidades ou arquivos a menos que seja estritamente necessário para corrigir este erro.
+- Mantenha o layout visual existente.
