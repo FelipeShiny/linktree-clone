@@ -1,6 +1,7 @@
+
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchCreatorData } from '../utils/profile';
 import ProfilePicture from '../components/ProfilePicture';
 
@@ -10,11 +11,38 @@ interface PageProps {
     }>;
 }
 
-export default async function CreatorPage({ params }: { params: Promise<{ creatorSlug: string }> }) {
-    const resolvedParams = await params;
-    const creatorSlug = resolvedParams.creatorSlug;
+export default function CreatorPage({ params }: PageProps) {
+    const [creatorData, setCreatorData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [creatorSlug, setCreatorSlug] = useState<string>('');
 
-    const creatorData = await fetchCreatorData(creatorSlug);
+    useEffect(() => {
+        const loadCreatorData = async () => {
+            try {
+                const resolvedParams = await params;
+                const slug = resolvedParams.creatorSlug;
+                setCreatorSlug(slug);
+
+                const data = await fetchCreatorData(slug);
+                setCreatorData(data);
+            } catch (error) {
+                console.error('Error loading creator data:', error);
+                setCreatorData(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCreatorData();
+    }, [params]);
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen">
+                <div className="text-lg">Carregando...</div>
+            </div>
+        );
+    }
 
     if (!creatorData) {
         return (
@@ -48,7 +76,7 @@ export default async function CreatorPage({ params }: { params: Promise<{ creato
 
                 <div className="space-y-3">
                     {links && links.length > 0 ? (
-                        links.map((link) => (
+                        links.map((link: any) => (
                             <a
                                 key={link.id}
                                 href={link.url}
