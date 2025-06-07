@@ -1,7 +1,8 @@
+
 'use client';
 
 import React, { useState } from 'react';
-import { Check, X, Pencil, Trash2 } from 'lucide-react';
+import { Check, X, Pencil } from 'lucide-react';
 import { Link } from '../types/linkTypes';
 import { updateLink } from '../utils/profile';
 import DeleteLinkButton from './DeleteLinkButton';
@@ -21,6 +22,8 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({
     const [isEditing, setIsEditing] = useState(false);
     const [editableTitle, setEditableTitle] = useState(link.title);
     const [editableUrl, setEditableUrl] = useState(link.url);
+    const [message, setMessage] = useState('');
+    const [updating, setUpdating] = useState(false);
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableTitle(e.target.value);
@@ -32,6 +35,7 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({
 
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
+        setMessage('');
         // Reset to original values if canceling
         if (isEditing) {
             setEditableTitle(link.title);
@@ -41,6 +45,9 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({
 
     const handleEditConfirm = async () => {
         try {
+            setUpdating(true);
+            setMessage('Atualizando...');
+
             const updatedLink = await updateLink(link.id, {
                 title: editableTitle,
                 url: editableUrl
@@ -53,16 +60,25 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({
                 );
                 setCreatorLinks(updatedLinks);
                 setIsEditing(false);
+                setMessage('Link atualizado!');
+                
+                // Clear message after 2 seconds
+                setTimeout(() => setMessage(''), 2000);
+            } else {
+                setMessage('Erro ao atualizar.');
             }
         } catch (error) {
             console.error('Error updating link:', error);
+            setMessage('Erro ao atualizar.');
+        } finally {
+            setUpdating(false);
         }
     };
 
     return (
         <div className="flex w-full items-center justify-between rounded-2xl border bg-white p-2 px-6 py-9 shadow">
-            <div className="flex flex-col items-center">
-                <div className="flex basis-5/6 flex-col gap-2">
+            <div className="flex flex-col items-center w-full">
+                <div className="flex basis-5/6 flex-col gap-2 w-full">
                     <div className="flex items-center gap-2">
                         {isEditing ? (
                             <input
@@ -70,6 +86,7 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({
                                 value={editableTitle}
                                 onChange={handleTitleChange}
                                 className="w-full rounded-lg p-1 border"
+                                disabled={updating}
                             />
                         ) : (
                             <h6>
@@ -105,6 +122,7 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({
                                 onChange={handleUrlChange}
                                 className="w-full rounded-lg p-1 border"
                                 placeholder="https://example.com"
+                                disabled={updating}
                             />
                         ) : (
                             <a
@@ -117,6 +135,13 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({
                             </a>
                         )}
                     </div>
+                    {message && (
+                        <div className={`text-xs p-1 rounded ${
+                            message.includes('atualizado') ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                            {message}
+                        </div>
+                    )}
                 </div>
             </div>
             <div className="flex items-center gap-2">

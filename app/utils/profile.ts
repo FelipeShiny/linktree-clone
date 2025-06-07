@@ -1,3 +1,4 @@
+
 import supabase from './supabaseClient';
 import { Link } from '../types/linkTypes';
 
@@ -79,6 +80,55 @@ export const fetchCreatorData = async (username: string) => {
         console.error('Error fetching creator data:', error);
         return null;
     }
+};
+
+export const fetchCreatorId = async (username: string) => {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('user_id')
+            .eq('username', username)
+            .single();
+
+        if (error) throw error;
+        return data.user_id;
+    } catch (error) {
+        console.error('Error fetching creator ID:', error);
+        return null;
+    }
+};
+
+export const fetchLinks = async (userId: string): Promise<Link[]> => {
+    try {
+        const { data, error } = await supabase
+            .from('links')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Error fetching links:', error);
+        return [];
+    }
+};
+
+export const getProfilePictureUrl = (avatarUrl: string | null): string => {
+    if (!avatarUrl) return '/assets/default-profile-picture.jpg';
+    
+    // Se já é uma URL completa, retorna como está
+    if (avatarUrl.startsWith('http')) return avatarUrl;
+    
+    // Se é um caminho do storage, constrói a URL correta
+    if (avatarUrl.startsWith('avatars/')) {
+        const { data } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(avatarUrl);
+        return data.publicUrl;
+    }
+    
+    return avatarUrl;
 };
 
 export const addNewLink = async (userId: string, title: string, url: string): Promise<Link | null> => {

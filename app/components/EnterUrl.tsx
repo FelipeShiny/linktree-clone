@@ -1,75 +1,98 @@
-import React from 'react';
-import { addNewLink } from '../utils/profile';
+
+'use client';
+
+import React, { useState } from 'react';
+import { addNewLink, getUser } from '../utils/profile';
 import { Link } from '../types/linkTypes';
 
-const EnterUrl = ({
-    newUrl,
-    setNewUrl,
-    newTitle,
-    setNewTitle,
-    creatorLinks,
-    setCreatorLinks,
-}: {
-    newUrl: string;
-    setNewUrl: React.Dispatch<React.SetStateAction<string>>;
-    newTitle: string;
-    setNewTitle: React.Dispatch<React.SetStateAction<string>>;
-    creatorLinks: Link[];
+interface EnterUrlProps {
     setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
-}) => {
+}
+
+const EnterUrl: React.FC<EnterUrlProps> = ({ setCreatorLinks }) => {
+    const [title, setTitle] = useState('');
+    const [url, setUrl] = useState('');
+    const [adding, setAdding] = useState(false);
+    const [message, setMessage] = useState('');
+
+    const handleAddLink = async () => {
+        if (!title.trim() || !url.trim()) {
+            setMessage('Preencha título e URL.');
+            return;
+        }
+
+        try {
+            setAdding(true);
+            setMessage('Adicionando link...');
+
+            const user = await getUser();
+            if (!user) {
+                setMessage('Usuário não autenticado.');
+                return;
+            }
+
+            const newLink = await addNewLink(user.id, title.trim(), url.trim());
+            
+            if (newLink) {
+                setCreatorLinks(prev => [...prev, newLink]);
+                setTitle('');
+                setUrl('');
+                setMessage('Link adicionado com sucesso!');
+                
+                // Clear message after 3 seconds
+                setTimeout(() => setMessage(''), 3000);
+            } else {
+                setMessage('Erro ao adicionar link.');
+            }
+        } catch (error) {
+            console.error('Error adding link:', error);
+            setMessage('Erro ao adicionar link.');
+        } finally {
+            setAdding(false);
+        }
+    };
+
     return (
-        <div className="flex w-full flex-col gap-6 rounded-2xl border bg-white p-2 px-6 py-9 shadow">
-            <h2>Enter URL</h2>
-            <form className="flex items-center justify-between gap-2">
+        <div className="space-y-4 p-4 bg-white rounded-lg shadow">
+            <h3 className="text-lg font-semibold">Adicionar Novo Link</h3>
+            
+            <div>
+                <label className="block text-sm font-medium mb-1">Título</label>
                 <input
-                    className="w-full rounded-xl bg-[#f3f3f1]"
                     type="text"
-                    name="url"
-                    id="url"
-                    value={newUrl}
-                    placeholder="URL"
-                    onChange={(e) => {
-                        setNewUrl(e.target.value);
-                    }}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Digite o título do link"
+                    className="w-full p-2 border border-gray-300 rounded-lg"
                 />
-                <button
-                    type="submit"
-                    className="cursor w-14 rounded-xl"
-                    onClick={(e) => {
-                        e.preventDefault();
-
-                        let formattedUrl = newUrl.trim();
-                        if (
-                            !formattedUrl.startsWith('http://') &&
-                            !formattedUrl.startsWith('https://')
-                        ) {
-                            formattedUrl = 'https://' + formattedUrl; // Add protocol if missing
-                        }
-
-                        try {
-                            const url = new URL(formattedUrl);
-                            const hostname = url.hostname.replace(/^www\./, ''); // Remove 'www.' if present
-                            const newTitle = hostname || 'Untitled';
-
-                            setNewTitle(newTitle);
-                            addNewLink(
-                                newTitle,
-                                formattedUrl,
-                                creatorLinks,
-                                setNewTitle,
-                                setNewUrl,
-                                setCreatorLinks,
-                            );
-                            // location.reload();
-                        } catch (error: any) {
-                            console.error('Invalid URL:', error.message);
-                            // Handle invalid URL error here, e.g., show an error message to the user
-                        }
-                    }}
-                >
-                    <p>Add</p>
-                </button>
-            </form>
+            </div>
+            
+            <div>
+                <label className="block text-sm font-medium mb-1">URL</label>
+                <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://exemplo.com"
+                    className="w-full p-2 border border-gray-300 rounded-lg"
+                />
+            </div>
+            
+            <button
+                onClick={handleAddLink}
+                disabled={adding}
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:opacity-50"
+            >
+                {adding ? 'Adicionando...' : 'Adicionar Link'}
+            </button>
+            
+            {message && (
+                <div className={`p-2 rounded text-sm ${
+                    message.includes('sucesso') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}>
+                    {message}
+                </div>
+            )}
         </div>
     );
 };

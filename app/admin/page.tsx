@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import AuthStore from '../interfaces/AuthStore';
+import { authStore } from '../interfaces/AuthStore';
 import { getUser, updateProfile, getProfileByUserId } from '../utils/profile';
 import { createBrowserClient } from '@supabase/ssr';
 import EditableLinkItem from '../components/EditableLinkItem';
@@ -43,10 +43,10 @@ const AdminPage = observer(() => {
                 setLoading(true);
                 
                 // Wait for AuthStore to be initialized
-                if (!AuthStore.isAuthenticated) {
+                if (!authStore.isAuthenticated) {
                     await new Promise(resolve => {
                         const interval = setInterval(() => {
-                            if (AuthStore.isAuthenticated) {
+                            if (authStore.isAuthenticated) {
                                 clearInterval(interval);
                                 resolve(true);
                             }
@@ -139,7 +139,7 @@ const AdminPage = observer(() => {
         );
     }
 
-    if (!AuthStore.isAuthenticated) {
+    if (!authStore.isAuthenticated) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <div className="text-lg">Você precisa estar logado para acessar esta página.</div>

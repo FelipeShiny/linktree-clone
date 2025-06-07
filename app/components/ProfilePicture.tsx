@@ -3,6 +3,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { getProfilePictureUrl } from '../utils/profile';
 
 interface ProfilePictureProps {
     src?: string;
@@ -18,7 +19,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     className = '' 
 }) => {
     const defaultImage = '/assets/default-profile-picture.jpg';
-    const imageUrl = src || defaultImage;
+    const imageUrl = src ? getProfilePictureUrl(src) : defaultImage;
 
     return (
         <div className={`relative ${className}`} style={{ width: size, height: size }}>

@@ -1,3 +1,4 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
@@ -11,9 +12,6 @@ const nextConfig = {
             },
         ],
         unoptimized: true,
-    },
-    experimental: {
-        missingSuspenseWithCSRBailout: false,
     },
 }
 
