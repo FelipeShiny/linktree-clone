@@ -1,0 +1,38 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+Você (Replit AI) fez refatorações extensivas para upload de foto de perfil e edição de perfil.
+Agora, estou enfrentando novos erros de compilação/runtime após suas últimas mudanças.
+
+# Problemas Atuais Críticos a Resolver (Prioridade Máxima da IA):
+
+1.  **`TypeError: (0 , _utils_profile__WEBPACK_IMPORTED_MODULE_4__.getUser) is not a function`**
+    * Local: `app/admin/page.tsx` (linha 49)
+    * Causa: A função `getUser()` está sendo chamada, mas não está exportada por `app/utils/profile.ts` ou não existe mais.
+
+2.  **`Error: Cannot read properties of undefined (reading 'user')`**
+    * Local: `app/admin/page.tsx` (linha 146)
+    * Causa: `authStore.user` é `undefined`. Isso pode ser porque o usuário não está carregado ou `authStore` não está sendo inicializado corretamente.
+
+3.  **`A param property was accessed directly with 'params.creatorSlug'. 'params' is now a Promise` (Aviso/Quebra Futura)**
+    * Local: `app/[creatorSlug]/page.tsx` (linha 19)
+    * Causa: Next.js 13/14+ requer que `params` seja desempacotado com `React.use()` em Server Components (ou componentes que se comportam como tal).
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Corrigir `TypeError: getUser is not a function`:**
+    * Revise `app/utils/profile.ts` para verificar a função de obter dados do usuário. Se `getUser` não existe, use a função correta (`fetchCreatorData` ou `supabase.auth.getUser()`) ou reimplemente `getUser` se for necessário.
+    * Atualize `app/admin/page.tsx` para usar a função correta de forma assíncrona para carregar os dados do usuário.
+
+2.  **Corrigir `Cannot read properties of undefined (reading 'user')`:**
+    * Garanta que `authStore.user` ou o objeto do usuário logado esteja disponível e seja verificado corretamente antes de ser acessado.
+
+3.  **Resolver o aviso sobre `params.creatorSlug`:**
+    * Atualize `app/[creatorSlug]/page.tsx` para desempacotar `params` usando `React.use()` ou a forma recomendada para acessar parâmetros de rota em Server Components (se aplicável, ou trate o aviso).
+
+4.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- Foque apenas em resolver estes três erros.
+- Não altere funcionalidades que já estavam funcionando (upload/exibição da foto, gestão de links).
+- Mantenha o layout visual existente.
+- Use a abordagem mais limpa e padrão para o Next.js e Supabase.
