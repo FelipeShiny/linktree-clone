@@ -1,0 +1,61 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+A integração com Supabase está funcionando (cadastro, login, gestão de links).
+O **upload da foto de perfil para o Supabase Storage está FUNCIONANDO!** (a imagem é enviada e a URL é salva na tabela 'profiles' no Supabase).
+O bucket 'avatars' no Supabase Storage está criado com políticas RLS de INSERT/UPDATE (para authenticated) e SELECT (para anon/public com 'bucket_id = 'avatars'').
+A URL do meu projeto Supabase REAL é "https://vxquljeazujpsufkckhp.supabase.co" (configurada em NEXT_PUBLIC_SUPABASE_URL nos Secrets).
+O next.config.js tem o domínio "vxquljeazujpsufkckhp.supabase.co" configurado em images.domains e 'unoptimized: true'.
+
+# Problemas Atuais a Resolver:
+
+1.  **Problema PERSISTENTE e CRÍTICO: Exibição da Foto de Perfil na UI:**
+    * **Sintoma:** A imagem de perfil NÃO APARECE na UI do aplicativo.
+    * **Erro em console:** `400 (Bad Request)` para a requisição da imagem.
+    * **Domínio Incorreto no Erro:** A URL que dá erro mostra `https://3e9d5788-...picard.replit.dev`, o que **NÃO É** meu domínio Supabase real.
+    * **URL Direta Funciona:** A URL da imagem copiada diretamente do Supabase Storage (ex: `https://vxquljeazujpsufkckhp.supabase.co/.../avatar?token=...`) **FUNCIONA PERFEITAMENTE** quando colada em uma nova aba do navegador.
+    * **Hipótese:** Problema de cache extremo ou interferência do ambiente Replit/Next.js que está alterando a URL ou bloqueando seu carregamento.
+
+2.  **Erro de Compilação/Deploy (TypeError em EditableLinkItem):**
+    * Erro: `TypeError: Type '{ ... }' is not assignable to type 'IntrinsicAttributes & { link: Link; }'. Property 'creatorLinks' does not exist...`
+    * Local: `app/admin/page.tsx` (linha 124, onde `<EditableLinkItem>` é usado).; setCreatorLinks: Dispatch<SetStateAction<Link[]>>; }' is not assignable to type 'IntrinsicAttributes & { link: Link; }'. Property 'creatorLinks' does not exist on type 'IntrinsicAttributes & { link: Link; }'.]
+    * Causa: O componente `EditableLinkItem` e/ou `DeleteLinkButton` não declaram as `props` `creatorLinks` e `setCreatorLinks` que estão sendo passadas.
+
+3.  **Avisos de Compilação/Runtime (Warnings) Importantes:**
+    * `Critical dependency: the request of a dependency is an expression` (`@supabase/realtime-js`).
+    * `Warning: Using <img> could result in slower LCP... Consider using <Image /> from next/image`.
+    * `Browserslist: caniuse-lite is outdated`.
+    * `npm audit` indica vulnerabilidades.
+
+# Novas Funcionalidades a Implementar:
+
+1.  **Edição de Perfil (Nome de Usuário e Biografia):**
+    * Adicionar campos na página de admin/perfil para que o usuário possa editar seu `username` e `full_name`.
+    * Adicionar um campo para que o usuário possa editar sua `bio`.
+    * Implementar a lógica para salvar essas atualizações na tabela `public.profiles` no Supabase, garantindo que o `username` seja único (o Supabase já força isso).
+    * A interface deve ter um botão para salvar as alterações.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Resolver a exibição da Foto de Perfil (Prioridade Absoluta):**
+    * Diagnostique e implemente a solução definitiva para que a imagem seja exibida corretamente na UI, contornando o problema do `picard.replit.dev` e do `400 Bad Request`. Pode envolver a reinstalação ou reconfiguração do `next/image` ou o uso da tag `<img>` HTML, garantindo que a URL seja gerada e usada perfeitamente.
+    * **A interface de upload/edição da foto de perfil deve ser clara e funcional.**
+
+2.  **Corrigir o `TypeError` nas props de `EditableLinkItem`:**
+    * Atualize as interfaces/props de `EditableLinkItem` (e `DeleteLinkButton` se necessário) para aceitar `creatorLinks` e `setCreatorLinks`.
+
+3.  **Implementar a Edição de Perfil:**
+    * Adicione os campos de UI para `username`, `full_name`, `bio` na página de admin (ou um modal/seção de configurações de perfil).
+    * Implemente a lógica de busca dos dados atuais do perfil e de salvamento das atualizações na tabela `public.profiles`.
+    * Adicione validação básica (ex: `username` já existe - o Supabase retornará um erro `23505` para isso).
+
+4.  **Tratar os Avisos de Compilação/Runtime:**
+    * Opcional: Se possível, adicione os comandos `npx update-browserslist-db@latest` e `npm audit fix` ao build (ou instrua o usuário a rodá-los).
+    * Trate o aviso de `Critical dependency` e o aviso de `<img>` (se a solução da imagem envolver voltar ao `<Image />`).
+
+5.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários para o ambiente Replit (como `rm -rf node_modules`, `npm install`).
+
+# Restrições e Preferências:
+- O objetivo principal é resolver o `TypeError`, fazer a foto de perfil aparecer, e adicionar edição de perfil.
+- Mantenha a arquitetura existente do Next.js e Supabase.
+- Garanta que todas as URLs usem variáveis de ambiente (Secrets) para o domínio Supabase.
+- Foco em uma solução que funcione no ambiente Replit, considerando os desafios de cache/proxy.
