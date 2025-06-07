@@ -1,0 +1,48 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+Você (Replit AI) fez refatorações extensivas para resolver problemas anteriores e adicionar edicão de perfil.
+Agora, estou enfrentando novos erros de compilação/runtime que impedem o aplicativo de funcionar corretamente.
+
+# Problemas Atuais Críticos a Resolver (Prioridade Máxima da IA):
+
+1.  **Erro: Imagem com src ".../default-profile-picture.jpg" tem propriedade "width" inválida. Esperava um valor numérico em pixels, mas recebeu "large".**
+    * Local: `app/components/ProfilePicture.tsx` (linha 21).
+    * Causa: A prop `width` (e provavelmente `height`) está recebendo um valor de string como "large" em vez de um número (pixels).
+
+2.  **Erro: Event handlers cannot be passed to Client Component props.**
+    * Local: `app/[creatorSlug]/page.tsx` (linha 59:100), relacionada à tag `<img>` ou `<Image>`.
+    * Causa: Uma função (como `onError`) está sendo passada como prop para um componente que o Next.js trata como Server Component, ou há uma incompatibilidade de contexto entre Client/Server Components.
+
+3.  **Erro: Error fetching links: {}**
+    * Local: `app/utils/profile.ts` (linha 171).
+    * Causa: Erro genérico ao buscar links, que precisa ser depurado e resolvido.
+
+4.  **Problema Persistente: Imagem de Perfil NÃO Aparece na UI**
+    * Embora as URLs do Supabase (do Storage) funcionem diretamente no navegador, a imagem não aparece no aplicativo. O erro `400 Bad Request` ou `406 Not Acceptable` ainda pode ocorrer na requisição da imagem no console.
+    * A IA deve garantir que a imagem seja exibida corretamente, contornando quaisquer problemas de proxy/cache do Replit.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Corrigir o erro de propriedade "width" inválida em `ProfilePicture.tsx`:**
+    * Garanta que as props `width` e `height` recebam valores numéricos (em pixels) para o componente de imagem.
+
+2.  **Resolver o erro `Event handlers cannot be passed to Client Component props`:**
+    * Analise o `app/[creatorSlug]/page.tsx` e o `ProfilePicture.tsx` para corrigir como os event handlers são passados/utilizados, garantindo a compatibilidade entre Server/Client Components ou ajustando a lógica de `onError`.
+
+3.  **Corrigir o `Error fetching links: {}`:**
+    * Investigue a função de busca de links em `app/utils/profile.ts` e resolva a causa do erro genérico.
+
+4.  **Resolver o problema persistente da imagem de perfil NÃO aparecer na UI:**
+    * Garanta que a imagem seja exibida corretamente, utilizando a URL do Supabase Storage.
+    * Faça com que a imagem apareça sem erros `400 Bad Request` ou `406 Not Acceptable`.
+
+5.  **Garanta que TODAS as funcionalidades básicas estejam operacionais (Login, Cadastro, Edição de Perfil, Gestão de Links).**
+
+6.  **Mantenha o LAYOUT VISUAL EXISTENTE do site.**
+
+7.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- O site deve funcionar perfeitamente no ambiente Replit.
+- Manter o layout visual existente.
+- Garanta que todas as URLs usem variáveis de ambiente (Secrets) para o domínio Supabase.
