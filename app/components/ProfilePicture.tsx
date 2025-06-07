@@ -1,51 +1,38 @@
-'use client';
-
 import React from 'react';
 import Image from 'next/image';
 
 interface ProfilePictureProps {
-    profilePicture?: string;
-    username?: string;
-    size?: number;
-    className?: string;
+  src?: string;
+  alt?: string;
+  size?: number;
+  className?: string;
 }
 
-const ProfilePicture: React.FC<ProfilePictureProps> = ({
-    profilePicture,
-    username = 'User',
-    size = 100,
-    className = ''
+const ProfilePicture: React.FC<ProfilePictureProps> = ({ 
+  src, 
+  alt = "Profile picture", 
+  size = 200,
+  className = ""
 }) => {
-    const defaultProfilePicture = '/assets/default-profile-picture.jpg';
+  const defaultAvatar = "/assets/default-profile-picture.jpg";
 
-    // Use the profile picture URL directly if it exists, otherwise use default
-    const imageSource = profilePicture || defaultProfilePicture;
-
-    return (
-        <div className={`relative ${className}`}>
-            {profilePicture ? (
-                <img
-                    src={imageSource}
-                    alt={`${username}'s profile picture`}
-                    width={size}
-                    height={size}
-                    className="rounded-full object-cover"
-                    onError={(e) => {
-                        console.error('Error loading profile picture:', e);
-                        (e.target as HTMLImageElement).src = defaultProfilePicture;
-                    }}
-                />
-            ) : (
-                <Image
-                    src={defaultProfilePicture}
-                    alt={`${username}'s profile picture`}
-                    width={size}
-                    height={size}
-                    className="rounded-full object-cover"
-                />
-            )}
-        </div>
-    );
+  return (
+    <div className={`relative rounded-full overflow-hidden ${className}`} style={{ width: size, height: size }}>
+      <Image
+        src={src || defaultAvatar}
+        alt={alt}
+        width={size}
+        height={size}
+        className="object-cover"
+        unoptimized
+        onError={(e) => {
+          console.error('Error loading profile picture:', src);
+          const target = e.target as HTMLImageElement;
+          target.src = defaultAvatar;
+        }}
+      />
+    </div>
+  );
 };
 
 export default ProfilePicture;

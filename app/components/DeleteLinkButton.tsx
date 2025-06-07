@@ -15,7 +15,13 @@ import { useState } from 'react';
 import { Link } from '../types/linkTypes';
 import LoadingSpinner from './LoadingSpinner';
 
-export function DeleteLinkButton({ linkId }: { linkId: number }) {
+interface DeleteLinkButtonProps {
+    linkId: number;
+    creatorLinks: Link[];
+    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
+}
+
+const DeleteLinkButton: React.FC<DeleteLinkButtonProps> = ({ linkId, creatorLinks, setCreatorLinks }) => {
     const [isDeleted, setIsDeleted] = useState<boolean>(false);
 
     const handleDelete = () => {
