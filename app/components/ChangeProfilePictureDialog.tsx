@@ -1,8 +1,27 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import { uploadProfilePicture } from '../utils/profile';
+
+// ADICIONADO: Importações dos componentes Dialog
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription, // Embora não usado, é bom manter para consistência
+    DialogFooter, // Embora não usado, é bom manter para consistência
+    DialogHeader,
+    DialogClose,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+
+// REMOVIDO: Button e Checkbox não são usados neste componente
+// import { Button } from '@/components/ui/button';
+// import { Checkbox } from '@/components/ui/checkbox';
+
+// REMOVIDO: lucide-react e DefaultCheckbox não são usados neste componente
+import { Pencil, X } from 'lucide-react'; // Apenas Pencil e X são usados aqui
+// import DefaultCheckbox from './DefaultCheckbox';
+// import { ChevronsUp } from 'lucide-react'; // Não usado aqui
 
 interface ChangeProfilePictureDialogProps {
     isOpen: boolean;
@@ -29,13 +48,13 @@ const ChangeProfilePictureDialog: React.FC<ChangeProfilePictureDialogProps> = ({
                 setMessage('Por favor, selecione um arquivo de imagem.');
                 return;
             }
-            
+
             // Validar tamanho (5MB máximo)
             if (file.size > 5 * 1024 * 1024) {
                 setMessage('A imagem deve ter no máximo 5MB.');
                 return;
             }
-            
+
             setSelectedFile(file);
             setMessage('');
         }
@@ -52,11 +71,11 @@ const ChangeProfilePictureDialog: React.FC<ChangeProfilePictureDialogProps> = ({
 
         try {
             const avatarUrl = await uploadProfilePicture(userId, selectedFile);
-            
+
             if (avatarUrl) {
                 setMessage('Foto atualizada com sucesso!');
                 onImageUpdate(avatarUrl);
-                
+
                 // Fechar o diálogo após 1 segundo
                 setTimeout(() => {
                     onClose();
@@ -74,13 +93,13 @@ const ChangeProfilePictureDialog: React.FC<ChangeProfilePictureDialogProps> = ({
         }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen) return null; // Componente só renderiza se isOpen for true, como um modal
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
                 <h3 className="text-lg font-semibold mb-4">Alterar Foto de Perfil</h3>
-                
+
                 <div className="space-y-4">
                     <div>
                         <input
@@ -103,8 +122,8 @@ const ChangeProfilePictureDialog: React.FC<ChangeProfilePictureDialogProps> = ({
 
                     {message && (
                         <div className={`p-2 rounded text-sm ${
-                            message.includes('sucesso') 
-                                ? 'bg-green-100 text-green-700' 
+                            message.includes('sucesso')
+                                ? 'bg-green-100 text-green-700'
                                 : 'bg-red-100 text-red-700'
                         }`}>
                             {message}
