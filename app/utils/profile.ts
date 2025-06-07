@@ -200,6 +200,25 @@ export function getProfilePictureUrl(avatarUrl?: string | null): string {
     return '/assets/default-profile-picture.jpg';
 }
 
+export async function updateLink(linkId: string, updates: { title: string; url: string }): Promise<boolean> {
+    try {
+        const { error } = await supabase
+            .from('links')
+            .update(updates)
+            .eq('id', linkId);
+
+        if (error) {
+            console.error('Error updating link:', error);
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error in updateLink:', error);
+        return false;
+    }
+}
+
 export async function deleteLink(linkId: string): Promise<boolean> {
     try {
         const { error } = await supabase
