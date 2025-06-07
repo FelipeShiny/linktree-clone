@@ -1,0 +1,33 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js no Replit.
+Você (Replit AI) fez refatorações recentes que introduziram novos erros de compilação.
+O upload da foto de perfil para o Supabase Storage está funcionando.
+A URL do meu projeto Supabase REAL é "https://vxquljeazujpsufkckhp.supabase.co".
+
+# Problemas Atuais Críticos a Resolver (Prioridade Máxima da IA):
+
+1.  **Erro: `'../utils/supabaseClient' does not contain a default export (imported as 'supabase').`**
+    * Local: `app/components/CreatorUsernamesList.tsx` (e outros arquivos que importam `supabase`).
+    * Causa: O arquivo `app/utils/supabaseClient.ts` está exportando `supabase` como uma exportação NOMEADA (`export const supabase`), mas os arquivos que o utilizam estão tentando importá-lo como uma exportação PADRÃO (`import supabase from '...'`).
+
+2.  **Erro de Configuração no `next.config.js`:**
+    * Aviso: `Invalid next.config.js options detected: Unrecognized key(s) in object: 'allowedDevOrigins' at "experimental"`
+    * Causa: A opção `allowedDevOrigins` dentro de `experimental` não é válida para a versão atual do Next.js (13.5.11).
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Corrigir o erro de exportação/importação do `supabaseClient`:**
+    * **Opção 1 (Preferencial):** Modifique `app/utils/supabaseClient.ts` para que ele tenha um `export default supabase;` (removendo `export const` se ele estiver na mesma linha da declaração da constante `supabase`).
+    * **Opção 2 (Alternativa):** Se a Opção 1 não for viável ou causar outros problemas, modifique **TODOS os arquivos que importam `supabase`** (como `app/components/CreatorUsernamesList.tsx`, `app/utils/profile.ts`, `app/signup/page.tsx`, `app/login/page.tsx`, `app/admin/page.tsx`) para usar uma importação nomeada: `import { supabase } from '../utils/supabaseClient';`.
+    * A solução deve garantir que o cliente `supabase` seja importado e utilizado corretamente em todo o projeto.
+
+2.  **Corrigir a configuração inválida no `next.config.js`:**
+    * Remova a opção `allowedDevOrigins` que está dentro de `experimental` no `next.config.js`, pois ela não é reconhecida.
+
+3.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- Foque apenas em resolver estes dois erros de compilação.
+- Não altere funcionalidades que já estavam funcionando ou que foram recém-implementadas (edição de perfil, foto de perfil, gestão de links), a menos que seja estritamente necessário para resolver estes erros de compilação.
+- Mantenha o layout visual existente.
+- Garanta que todas as URLs usem variáveis de ambiente (Secrets) para o domínio Supabase.
