@@ -54,18 +54,28 @@ export async function getProfileByUserId(userId: string): Promise<Profile | null
     }
 }
 
-export const updateProfile = async (userId: string, updates: Partial<Profile>) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('user_id', userId)
-    .select()
-    .single();
+export const updateProfile = async (userId: string, updates: Partial<Profile>): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId)
+      .select()
+      .single();
 
-  return { data, error };
+    if (error) {
+      console.error('Error updating profile:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateProfile:', error);
+    return false;
+  }
 };
 
-export const uploadProfilePicture = async (userId: string, file: File) => {
+export const uploadProfilePicture = async (userId: string, file: File): Promise<string | null> => {
   try {
     // Upload da imagem para o Supabase Storage
     const fileExt = file.name.split('.').pop();
@@ -78,7 +88,8 @@ export const uploadProfilePicture = async (userId: string, file: File) => {
       });
 
     if (uploadError) {
-      throw uploadError;
+      console.error('Upload error:', uploadError);
+      return null;
     }
 
     // Obter a URL pública da imagem
@@ -86,25 +97,10 @@ export const uploadProfilePicture = async (userId: string, file: File) => {
       .from('avatars')
       .getPublicUrl(fileName);
 
-    // Atualizar o perfil com a nova URL da imagem
-    const { data: profileData, error: profileError } = await updateProfile(userId, {
-      avatar_url: publicUrl
-    });
-
-    if (profileError) {
-      throw profileError;
-    }
-
-    return { 
-      data: { uploadData, profileData, publicUrl }, 
-      error: null 
-    };
+    return publicUrl;
   } catch (error) {
     console.error('Erro no upload da foto de perfil:', error);
-    return { 
-      data: null, 
-      error: error 
-    };
+    return null;
   }
 };
 
@@ -130,6 +126,11 @@ export async function fetchCreatorId(username: string): Promise<string | null> {
 
 export async function fetchLinks(userId: string): Promise<Link[]> {
     try {
+        if (!userId) {
+            console.error('fetchLinks: userId is required');
+            return [];
+        }
+
         const { data, error } = await supabase
             .from('links')
             .select('*')
@@ -137,7 +138,7 @@ export async function fetchLinks(userId: string): Promise<Link[]> {
             .order('order_index', { ascending: true });
 
         if (error) {
-            console.error('Error fetching links:', error);
+            console.error('Error fetching links:', error.message || error);
             return [];
         }
 
@@ -180,7 +181,7 @@ export async function fetchCreatorData(username: string) {
 }
 
 export function getProfilePictureUrl(avatarUrl?: string | null): string {
-    if (!avatarUrl) {
+    if (!avatarUrl || avatarUrl.trim() === '') {
         return '/assets/default-profile-picture.jpg';
     }
 
@@ -191,5 +192,29 @@ export function getProfilePictureUrl(avatarUrl?: string | null): string {
 
     // Se é um caminho relativo do Supabase Storage
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    return `${supabaseUrl}/storage/v1/object/public/avatars/${avatarUrl}`;
+    if (supabaseUrl) {
+        return `${supabaseUrl}/storage/v1/object/public/avatars/${avatarUrl}`;
+    }
+    
+    // Fallback para imagem padrão se não conseguir construir URL
+    return '/assets/default-profile-picture.jpg';
+}
+
+export async function deleteLink(linkId: string): Promise<boolean> {
+    try {
+        const { error } = await supabase
+            .from('links')
+            .delete()
+            .eq('id', linkId);
+
+        if (error) {
+            console.error('Error deleting link:', error);
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error in deleteLink:', error);
+        return false;
+    }
 }

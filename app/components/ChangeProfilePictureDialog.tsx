@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { uploadProfilePicture, getUser } from '../utils/profile';
+import { uploadProfilePicture, getUser, updateProfile } from '../utils/profile';
 import { authStore } from '../interfaces/AuthStore';
 
 interface ChangeProfilePictureDialogProps {

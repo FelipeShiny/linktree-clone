@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { fetchCreatorData } from '../utils/profile';
 import ProfilePicture from '../components/ProfilePicture';
