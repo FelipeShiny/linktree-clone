@@ -12,6 +12,7 @@ import {
 import { Trash } from 'lucide-react';
 import { deleteLink } from '../utils/profile';
 import { useState } from 'react';
+import { Link } from '../types/linkTypes';
 import LoadingSpinner from './LoadingSpinner';
 
 export function DeleteLinkButton({ linkId }: { linkId: number }) {

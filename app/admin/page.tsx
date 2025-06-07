@@ -45,7 +45,7 @@ const Admin = () => {
     useEffect(() => {
         if (creatorId) {
             fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
-            
+
             // Buscar dados do perfil incluindo avatar_url
             const loadProfileData = async () => {
                 try {
@@ -69,7 +69,7 @@ const Admin = () => {
                     setProfilePicture(url);
                 }
             };
-            
+
             loadProfileData();
         }
     }, [creatorId]);

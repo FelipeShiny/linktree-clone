@@ -15,7 +15,14 @@ import {
 } from '../utils/profile';
 import { DeleteLinkButton } from './DeleteLinkButton';
 
-// AQUI É ONDE VOCÊ VAI ADICIONAR AS PROPS
+// Interface para as props do componente
+interface EditableLinkItemProps {
+    link: Link;
+    creatorLinks: Link[];
+    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
+}
+
+export const EditableLinkItem = ({ link, creatorLinks, setCreatorLinks }: EditableLinkItemProps) => {ROPS
 interface EditableLinkItemProps {
     link: Link;
     // ADICIONE ESTAS DUAS LINHAS:

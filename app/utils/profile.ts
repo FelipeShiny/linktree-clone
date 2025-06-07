@@ -48,7 +48,7 @@ export const uploadProfilePicture = async (
 ) => {
     try {
         console.log('Iniciando upload da foto de perfil para:', creatorId);
-        
+
         const filePath = `${creatorId}/avatar`;
 
         // 1. Upload da imagem no Storage com upsert
@@ -63,7 +63,7 @@ export const uploadProfilePicture = async (
             console.error('Erro no upload:', uploadError);
             throw new Error(`Falha no upload: ${uploadError.message}`);
         }
-        
+
         console.log('Upload realizado com sucesso:', uploadData);
 
         // 2. Gerar URL pública
@@ -86,7 +86,7 @@ export const uploadProfilePicture = async (
         }
 
         console.log('Perfil atualizado com sucesso no banco de dados');
-        
+
         return publicUrl;
 
     } catch (error) {
@@ -141,26 +141,22 @@ export const fetchCreatorData = async (creatorSlug: string) => {
     }
 };
 
-// Função para gerar URL da imagem de perfil com bust de cache
-export const getProfilePictureUrl = (creatorId: string, forceRefresh: boolean = false) => {
-    if (!creatorId) {
-        console.log('CreatorId não fornecido, usando imagem padrão');
+export const getProfilePictureUrl = (creatorId: string): string => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+        console.error('NEXT_PUBLIC_SUPABASE_URL não está definida');
         return '/assets/default-profile-picture.jpg';
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!supabaseUrl) {
-        console.error('NEXT_PUBLIC_SUPABASE_URL não configurada');
+    // Verificar se a URL contém o domínio correto do Supabase
+    if (!supabaseUrl.includes('supabase.co')) {
+        console.error('URL do Supabase inválida:', supabaseUrl);
         return '/assets/default-profile-picture.jpg';
     }
-    
-    // Adicionar timestamp para quebrar cache
-    const timestamp = forceRefresh ? Date.now() : '';
-    const cacheParam = timestamp ? `?v=${timestamp}` : '';
-    const url = `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar${cacheParam}`;
-    
-    console.log('URL da imagem gerada:', url);
-    return url;
+
+    // Gerar URL com timestamp para evitar cache
+    const timestamp = Date.now();
+    return `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar?v=${timestamp}`;
 };
 
 // Função para buscar dados do perfil incluindo avatar_url

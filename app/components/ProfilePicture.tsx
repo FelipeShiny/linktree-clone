@@ -1,84 +1,67 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChangeProfilePictureDialog } from './ChangeProfilePictureDialog';
 
 interface ProfilePictureProps {
     creatorId: string;
-    profilePicture?: string;
-    setProfilePicture?: React.Dispatch<React.SetStateAction<string>>;
-    router?: any;
-    size?: number;
+    isEditable?: boolean;
+    profilePicture: string;
+    setProfilePicture: (url: string) => void;
 }
 
-const ProfilePicture: React.FC<ProfilePictureProps> = ({
-    creatorId,
-    profilePicture,
-    setProfilePicture,
-    router,
-    size = 192,
-}) => {
-    const [imageUrl, setImageUrl] = useState<string>('');
-    const [hasError, setHasError] = useState<boolean>(false);
+export const ProfilePicture = ({ creatorId, isEditable = false, profilePicture, setProfilePicture }: ProfilePictureProps) => {
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageSrc, setImageSrc] = useState('/assets/default-profile-picture.jpg');
 
     useEffect(() => {
-        // Construir URL da imagem de forma robusta
-        const buildImageUrl = () => {
-            if (profilePicture && profilePicture.startsWith('http')) {
-                // Se já é uma URL completa, usar diretamente
-                return profilePicture;
+        if (profilePicture) {
+            // Verificar se a URL é válida do Supabase
+            if (profilePicture.includes('supabase.co')) {
+                console.log('URL da imagem do Supabase:', profilePicture);
+                setImageSrc(profilePicture);
+            } else {
+                console.log('URL inválida, usando padrão');
+                setImageSrc('/assets/default-profile-picture.jpg');
             }
-            
-            // Construir URL usando variável de ambiente
-            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-            if (supabaseUrl && creatorId) {
-                // Adicionar timestamp para quebrar cache
-                const timestamp = Date.now();
-                return `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar?v=${timestamp}`;
-            }
-            
-            return '/assets/default-profile-picture.jpg';
-        };
+        }
+    }, [profilePicture]);
 
-        const url = buildImageUrl();
-        setImageUrl(url);
-        setHasError(false);
-    }, [profilePicture, creatorId]);
+    const handleImageLoad = () => {
+        console.log('Imagem carregada com sucesso:', imageSrc);
+        setImageLoaded(true);
+    };
 
     const handleImageError = () => {
         console.log('Erro ao carregar imagem, usando padrão');
-        setHasError(true);
-        setImageUrl('/assets/default-profile-picture.jpg');
-    };
-
-    const handleImageLoad = () => {
-        console.log('Imagem carregada com sucesso:', imageUrl);
-        setHasError(false);
+        setImageSrc('/assets/default-profile-picture.jpg');
+        setImageLoaded(true);
     };
 
     return (
-        <div className="relative inline-block">
-            <div className="relative">
+        <div className="relative">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
                 <img
-                    src={hasError ? '/assets/default-profile-picture.jpg' : imageUrl}
-                    alt="Profile picture"
-                    width={size}
-                    height={size}
-                    className="rounded-full object-cover shadow-lg border-4 border-white"
-                    style={{ width: size, height: size }}
-                    onError={handleImageError}
+                    src={imageSrc}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
                     onLoad={handleImageLoad}
-                    crossOrigin="anonymous"
+                    onError={handleImageError}
+                    style={{
+                        display: imageLoaded ? 'block' : 'none'
+                    }}
                 />
+                {!imageLoaded && (
+                    <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
+                        <div className="text-gray-400 text-xs">Loading...</div>
+                    </div>
+                )}
             </div>
-            {router && setProfilePicture && (
-                <ChangeProfilePictureDialog
-                    router={router}
+            {isEditable && (
+                <ChangeProfilePictureDialog 
                     creatorId={creatorId}
+                    profilePicture={profilePicture}
                     setProfilePicture={setProfilePicture}
                 />
             )}
         </div>
     );
 };
-
-export default ProfilePicture;
