@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; // Garanta que React, useEffect, useState estão importados
 import {
     Check,
     GripVertical,
@@ -7,7 +7,7 @@ import {
     ToggleRight,
     X,
 } from 'lucide-react';
-import { Link } from '../types/linkTypes';
+import { Link } from '../types/linkTypes'; // Certifique-se que Link está importado
 import {
     updateLinkTitle,
     updateLinkUrl,
@@ -15,13 +15,21 @@ import {
 } from '../utils/profile';
 import { DeleteLinkButton } from './DeleteLinkButton';
 
+// AQUI É ONDE VOCÊ VAI ADICIONAR AS PROPS
 interface EditableLinkItemProps {
     link: Link;
+    // ADICIONE ESTAS DUAS LINHAS:
     creatorLinks: Link[];
     setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
 }
 
-const EditableLinkItem = ({ link, creatorLinks, setCreatorLinks }: EditableLinkItemProps) => {
+const EditableLinkItem = ({
+    link,
+    // ADICIONE ESTAS DUAS LINHAS NO DESTRUCTURING DE PROPS:
+    creatorLinks,
+    setCreatorLinks,
+}: EditableLinkItemProps) => {
+    // ... restante do código do componente
     const [preSubmittedTitle, setPreSubmittedTitle] = useState(link.title);
     const [editableTitle, setEditableTitle] = useState(link.title);
     const [isEditing, setIsEditing] = useState(false);
