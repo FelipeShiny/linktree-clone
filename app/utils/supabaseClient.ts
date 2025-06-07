@@ -38,3 +38,6 @@ export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
   return { error };
 };
+
+// Exportação padrão para compatibilidade com importações existentes
+export default supabase;
