@@ -1,0 +1,47 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+A integração com Supabase está avançada:
+- Cadastro, login, gestão de links (adicionar, editar, deletar) funcionam.
+- Perfis públicos são exibidos.
+- O upload da foto de perfil para o Supabase Storage está FUNCIONANDO (a imagem é enviada e a URL é salva na tabela 'profiles' no Supabase).
+- O bucket 'avatars' no Supabase Storage está criado.
+- As políticas RLS para 'avatars' (INSERT/UPDATE para authenticated, SELECT para anon/public com 'bucket_id = 'avatars'') foram configuradas e refeitas.
+- A URL do meu projeto Supabase real (ex: 'vxquljeazujpsufkckhp.supabase.co') está configurada em NEXT_PUBLIC_SUPABASE_URL nos Secrets do Replit.
+- O código em profile.ts (fetchProfilePicture, getProfilePictureUrl) e ChangeProfilePictureDialog.tsx (linha 77) foi corrigido para usar process.env.NEXT_PUBLIC_SUPABASE_URL e o caminho /avatars/.
+- O next.config.js foi configurado com meu domínio real em images.domains.
+- Fizemos limpezas profundas de cache (rm -rf .next, npm cache clean --force, rm -rf node_modules, npm install).
+
+# Problema PERSISTENTE: Exibição da Foto de Perfil
+
+1.  **Erro `400 (Bad Request)` ao carregar a imagem:**
+    * **Onde ocorre:** No navegador, ao carregar a imagem de perfil (GET request para a URL da imagem).
+    * **Sintoma:** A imagem não aparece na UI (mostra um placeholder ou quebra).
+    * **Mensagens de erro (comuns):** `Failed to load resource: the server responded with a status of 400 (Bad Request)`.
+
+2.  **Erro `Invalid src prop` com DOMÍNIO INCORRETO:**
+    * **Onde ocorre:** No console do Next.js (runtime error).
+    * **Sintoma:** Mensagens como `hostname "dpehbxmmipfxwdjjmuog.supabase.co" is not configured under images in your next.config.js`.
+    * **Contradição:** Meu domínio real é `vxquljeazujpsufkckhp.supabase.co`. O erro ainda mostra o domínio `dpehbxmmipfxwdjjmuog.supabase.co` ou `profile_picture` no caminho, mesmo depois de todas as correções no código e no `next.config.js`. Isso sugere um **cache extremo** ou **outra fonte hardcoded da URL**.
+
+3.  **Botão de upload/edição sumiu/não está claro na UI:**
+    * **Causa:** Consequência de erros de compilação/renderização anteriores. Precisamos garantir que a UI para upload de foto de perfil esteja clara e acessível.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Diagnosticar a causa raiz exata pela qual a imagem de perfil não está sendo exibida (o erro 400).**
+    * **Priorize a investigação de cache extremo do Next.js/Replit** que impede o `next.config.js` de ser lido corretamente ou URLs antigas de serem removidas.
+    * **Verifique a efetividade da política RLS de SELECT** para o bucket `avatars` no Supabase Storage.
+    * **Inspecione todas as fontes da URL da imagem** na codebase para garantir que não haja URLs hardcoded remanescentes (`dpehbxmmipfxwdjjmuog.supabase.co` ou `/profile_picture/`).
+
+2.  **Implementar a solução completa e definitiva** para que a foto de perfil seja exibida corretamente na interface do usuário após o upload e login.
+    * Isso pode envolver ajustes adicionais no `next.config.js`, no cliente Supabase, ou na lógica de carregamento de imagem.
+    * Se for um problema de cache/ambiente, instrua sobre os passos mais agressivos para o Replit.
+
+3.  **Garantir que a interface para upload/edição da foto de perfil esteja visível e clara** na página de admin/perfil do usuário logado.
+
+4.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários para o ambiente Replit.
+
+# Restrições e Preferências:
+- O objetivo principal é fazer a foto de perfil aparecer.
+- Mantenha a arquitetura existente do Next.js e Supabase.
+- Garanta que todas as URLs usem variáveis de ambiente (Secrets) para o domínio Supabase.
