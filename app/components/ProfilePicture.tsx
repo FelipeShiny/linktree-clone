@@ -7,36 +7,30 @@ const ProfilePicture = ({
     profilePicture,
     setProfilePicture,
     router,
+    size = 192,
 }: {
     creatorId: string;
-    profilePicture: string;
-    setProfilePicture: React.Dispatch<React.SetStateAction<string>>;
+    profilePicture?: string;
+    setProfilePicture?: React.Dispatch<React.SetStateAction<string>>;
     router?: any;
+    size?: number;
 }) => {
     return (
         <div className="relative inline-block">
             <div className="relative">
-                {creatorId && profilePicture ? (
-                    <Image
-                        src={profilePicture}
-                        alt="profile_picture"
-                        width={0}
-                        height={0}
-                        sizes={'1'}
-                        className="h-48 w-48 rounded-full object-cover shadow-lg"
-                        priority
-                    />
-                ) : (
-                    <Image
-                        src={'/assets/default-profile-picture.jpg'}
-                        alt="profile_picture"
-                        width={0}
-                        height={0}
-                        sizes={'1'}
-                        className="h-48 w-48 rounded-full object-cover shadow-lg"
-                        priority
-                    />
-                )}
+                <Image
+                    src={profilePicture || '/assets/default-profile-picture.jpg'}
+                    alt="profile_picture"
+                    width={size}
+                    height={size}
+                    className={`rounded-full object-cover shadow-lg`}
+                    style={{ width: size, height: size }}
+                    priority
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/assets/default-profile-picture.jpg';
+                    }}
+                />
             </div>
             {router && (
                 <ChangeProfilePictureDialog

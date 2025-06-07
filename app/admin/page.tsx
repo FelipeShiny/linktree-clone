@@ -64,11 +64,11 @@ const Admin = () => {
             <section className="mb-8 p-6 bg-white rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Profile Settings</h2>
                 <div className="flex items-center space-x-4">
-                    <ProfilePicture creatorId={creatorId} username={creatorUsername} size={96} />
-                    <ChangeProfilePictureDialog
-                        creatorId={creatorId}
-                        router={router}
+                    <ProfilePicture 
+                        creatorId={creatorId} 
+                        profilePicture={profilePicture}
                         setProfilePicture={setProfilePicture}
+                        router={router}
                     />
                     <div>
                         <p className="text-lg font-medium">@{creatorUsername || creatorId}</p>

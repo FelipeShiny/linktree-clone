@@ -140,7 +140,13 @@ export const getProfilePictureUrl = (creatorId: string) => {
     if (!creatorId) return '/assets/default-profile-picture.jpg'; // Imagem padrão
 
     // Usa a variável de ambiente e o bucket 'avatars'.
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+        console.error('NEXT_PUBLIC_SUPABASE_URL not configured');
+        return '/assets/default-profile-picture.jpg';
+    }
+    
+    return `${supabaseUrl}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`;
 };
 
 export const fetchLinks = async (
