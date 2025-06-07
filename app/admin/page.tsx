@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { authStore } from '../interfaces/AuthStore';
+import AuthStore from '../interfaces/AuthStore';
 import { getUser, updateProfile, getProfileByUserId } from '../utils/profile';
 import { createBrowserClient } from '@supabase/ssr';
 import EditableLinkItem from '../components/EditableLinkItem';
@@ -12,24 +12,22 @@ import ChangeProfilePictureDialog from '../components/ChangeProfilePictureDialog
 import ProfilePicture from '../components/ProfilePicture';
 import { Link } from '../types/linkTypes';
 
-interface Profile {
-    id: string;
+interface ProfileData {
     username: string;
     full_name: string;
     bio: string;
     avatar_url: string;
 }
 
-const Admin = observer(() => {
-    const [profileData, setProfileData] = useState<Profile>({
-        id: '',
+const AdminPage = observer(() => {
+    const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [profileData, setProfileData] = useState<ProfileData>({
         username: '',
         full_name: '',
         bio: '',
         avatar_url: ''
     });
-    const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
-    const [loading, setLoading] = useState(true);
     const [editingProfile, setEditingProfile] = useState(false);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
@@ -40,22 +38,38 @@ const Admin = observer(() => {
     );
 
     useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
-        try {
-            setLoading(true);
-            const user = await getUser();
-            
-            if (user) {
-                authStore.setUser(user);
+        const loadUserData = async () => {
+            try {
+                setLoading(true);
                 
-                // Load profile data
+                // Wait for AuthStore to be initialized
+                if (!AuthStore.isAuthenticated) {
+                    await new Promise(resolve => {
+                        const interval = setInterval(() => {
+                            if (AuthStore.isAuthenticated) {
+                                clearInterval(interval);
+                                resolve(true);
+                            }
+                        }, 100);
+                        
+                        // Timeout after 5 seconds
+                        setTimeout(() => {
+                            clearInterval(interval);
+                            resolve(false);
+                        }, 5000);
+                    });
+                }
+
+                const user = await getUser();
+                if (!user) {
+                    console.error('No user found');
+                    return;
+                }
+
+                // Fetch profile data
                 const profile = await getProfileByUserId(user.id);
                 if (profile) {
                     setProfileData({
-                        id: profile.id,
                         username: profile.username || '',
                         full_name: profile.full_name || '',
                         bio: profile.bio || '',
@@ -63,64 +77,43 @@ const Admin = observer(() => {
                     });
                 }
 
-                // Load user's links
+                // Fetch links
                 const { data: links, error } = await supabase
                     .from('links')
                     .select('*')
-                    .eq('creator_id', user.id)
-                    .order('created_at', { ascending: false });
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: true });
 
                 if (error) {
                     console.error('Error fetching links:', error);
                 } else {
                     setCreatorLinks(links || []);
                 }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error('Error loading data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
+
+        loadUserData();
+    }, [supabase]);
 
     const handleSaveProfile = async () => {
         try {
             setSaving(true);
-            setMessage('');
-
-            // Validate required fields
-            if (!profileData.username.trim()) {
-                setMessage('Nome de usuário é obrigatório');
+            const user = await getUser();
+            if (!user) {
+                setMessage('Erro: usuário não encontrado');
                 return;
             }
 
-            // Check if username is unique (if changed)
-            const { data: existingUser } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('username', profileData.username.trim())
-                .neq('id', profileData.id)
-                .single();
-
-            if (existingUser) {
-                setMessage('Este nome de usuário já está em uso');
-                return;
-            }
-
-            // Update profile
-            const success = await updateProfile(profileData.id, {
-                username: profileData.username.trim(),
-                full_name: profileData.full_name.trim(),
-                bio: profileData.bio.trim()
-            });
-
-            if (success) {
-                setMessage('Perfil atualizado com sucesso!');
-                setEditingProfile(false);
-                setTimeout(() => setMessage(''), 3000);
-            } else {
-                setMessage('Erro ao atualizar perfil');
-            }
+            await updateProfile(user.id, profileData);
+            setMessage('Perfil atualizado com sucesso!');
+            setEditingProfile(false);
+            
+            // Clear message after 3 seconds
+            setTimeout(() => setMessage(''), 3000);
         } catch (error) {
             console.error('Error saving profile:', error);
             setMessage('Erro ao salvar perfil');
@@ -131,8 +124,7 @@ const Admin = observer(() => {
 
     const handleCancelEdit = () => {
         setEditingProfile(false);
-        loadData(); // Reload original data
-        setMessage('');
+        // Reset form data if needed
     };
 
     const handleProfilePictureUpdate = (newAvatarUrl: string) => {
@@ -140,11 +132,19 @@ const Admin = observer(() => {
     };
 
     if (loading) {
-        return <div className="flex justify-center items-center min-h-screen">Carregando...</div>;
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="text-lg">Carregando...</div>
+            </div>
+        );
     }
 
-    if (!authStore.user) {
-        return <div className="flex justify-center items-center min-h-screen">Usuário não encontrado</div>;
+    if (!AuthStore.isAuthenticated) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="text-lg">Você precisa estar logado para acessar esta página.</div>
+            </div>
+        );
     }
 
     return (
@@ -232,14 +232,10 @@ const Admin = observer(() => {
                         </div>
                     ) : (
                         <div className="flex-1">
-                            <div className="mb-2">
-                                <span className="font-medium">Usuário:</span> {profileData.username || 'Não informado'}
-                            </div>
-                            <div className="mb-2">
-                                <span className="font-medium">Nome:</span> {profileData.full_name || 'Não informado'}
-                            </div>
-                            <div>
-                                <span className="font-medium">Bio:</span> {profileData.bio || 'Não informada'}
+                            <div className="space-y-2">
+                                <h3 className="text-xl font-semibold">{profileData.full_name || 'Nome não definido'}</h3>
+                                <p className="text-gray-600">@{profileData.username || 'username'}</p>
+                                <p className="text-gray-800">{profileData.bio || 'Biografia não definida'}</p>
                             </div>
                         </div>
                     )}
@@ -247,30 +243,24 @@ const Admin = observer(() => {
             </section>
 
             {/* Links Section */}
-            <section>
-                <h2 className="text-2xl font-bold mb-6">Seus Links</h2>
-                
-                <div className="space-y-4 mb-6">
+            <section className="mb-8">
+                <h2 className="text-2xl font-bold mb-4">Seus Links</h2>
+                <div className="space-y-4">
                     {creatorLinks.map((link) => (
-                        <EditableLinkItem 
-                            key={link.id} 
-                            link={link} 
+                        <EditableLinkItem
+                            key={link.id}
+                            link={link}
                             creatorLinks={creatorLinks}
                             setCreatorLinks={setCreatorLinks}
                         />
                     ))}
                 </div>
-
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-xl font-bold mb-4">Adicionar Novo Link</h3>
-                    <EnterUrl 
-                        creatorLinks={creatorLinks} 
-                        setCreatorLinks={setCreatorLinks} 
-                    />
+                <div className="mt-6">
+                    <EnterUrl setCreatorLinks={setCreatorLinks} />
                 </div>
             </section>
         </div>
     );
 });
 
-export default Admin;
+export default AdminPage;

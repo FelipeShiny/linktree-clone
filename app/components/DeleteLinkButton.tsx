@@ -1,76 +1,44 @@
-import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogClose,
-} from '@/components/ui/dialog';
-import { Trash } from 'lucide-react';
+'use client';
+
+import React from 'react';
+import { Trash2 } from 'lucide-react';
 import { deleteLink } from '../utils/profile';
-import { useState } from 'react';
 import { Link } from '../types/linkTypes';
-import LoadingSpinner from './LoadingSpinner';
 
 interface DeleteLinkButtonProps {
-    linkId: number;
+    linkId: string;
     creatorLinks: Link[];
     setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
 }
 
-const DeleteLinkButton: React.FC<DeleteLinkButtonProps> = ({ linkId, creatorLinks, setCreatorLinks }) => {
-    const [isDeleted, setIsDeleted] = useState<boolean>(false);
-
-    const handleDelete = () => {
-        deleteLink(linkId);
-        setIsDeleted(true);
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
+const DeleteLinkButton: React.FC<DeleteLinkButtonProps> = ({ 
+    linkId, 
+    creatorLinks, 
+    setCreatorLinks 
+}) => {
+    const handleDelete = async () => {
+        if (window.confirm('Tem certeza que deseja excluir este link?')) {
+            try {
+                const success = await deleteLink(linkId);
+                if (success) {
+                    const updatedLinks = creatorLinks.filter(link => link.id !== linkId);
+                    setCreatorLinks(updatedLinks);
+                }
+            } catch (error) {
+                console.error('Error deleting link:', error);
+            }
+        }
     };
 
     return (
-        <>
-            {isDeleted ? (
-                <LoadingSpinner />
-            ) : (
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Trash className="w-4 cursor-pointer" />
-                    </DialogTrigger>
-                    <DialogContent className="bg-white sm:max-w-[425px]">
-                        <DialogHeader>
-                            <DialogTitle>Delete Link</DialogTitle>
-                            <DialogDescription>
-                                This action cannot be undone. This will
-                                permanently delete your account and remove your
-                                data from our servers.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter className="flex flex-col gap-2">
-                            <DialogClose asChild>
-                                <Button type="button">
-                                    <p>No, I don&apos;t want to delete</p>
-                                </Button>
-                            </DialogClose>
-                            <DialogClose asChild>
-                                <Button
-                                    type="button"
-                                    className="bg-white outline outline-1 outline-[#8129D9]"
-                                    onClick={handleDelete}
-                                >
-                                    <p className="text-[#8129D9]">
-                                        Yes, I want to delete
-                                    </p>
-                                </Button>
-                            </DialogClose>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            )}
-        </>
+        <button
+            onClick={handleDelete}
+            className="p-2 text-red-500 hover:bg-red-50 rounded"
+            title="Excluir link"
+        >
+            <Trash2 className="w-4 h-4" />
+        </button>
     );
-}
+};
+
+export default DeleteLinkButton;

@@ -1,62 +1,51 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import { observer } from 'mobx-react';
-import {
-    fetchCreatorId,
-    fetchLinks,
-    fetchCreatorData,
-    getProfilePictureUrl,
-} from '../utils/profile';
-import ProfilePicture from '../components/ProfilePicture';
+import React from 'react';
+import { fetchCreatorData } from '../utils/profile';
 import CreatorLinks from '../components/CreatorLinks';
-import { Link } from '../types/linkTypes';
+import ProfilePicture from '../components/ProfilePicture';
 
-const CreatorLinksPage = observer(
-    ({ params }: { params: { creatorSlug: string } }) => {
-        const [creatorId, setCreatorId] = useState<string>('');
+interface PageProps {
+    params: Promise<{
+        creatorSlug: string;
+    }>;
+}
 
-        const { creatorSlug } = params;
-        const [profilePicture, setProfilePicture] = useState<string>('');
-        const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
-        const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
+export default async function CreatorPage({ params }: PageProps) {
+    const { creatorSlug } = await params;
 
-        useEffect(() => {
-            if (creatorSlug) {
-                const loadCreatorId = async () => {
-                    const id = await fetchCreatorId(creatorSlug);
-                    if (id) {
-                        setCreatorId(id);
-                    }
-                };
-                loadCreatorId();
-            }
-        }, [creatorSlug]);
+    const creatorData = await fetchCreatorData(creatorSlug);
 
-        useEffect(() => {
-            if (creatorId) {
-                fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
-                // Generate profile picture URL using the new function
-                const profilePictureUrl = getProfilePictureUrl(creatorId);
-                setProfilePicture(profilePictureUrl);
-            }
-        }, [creatorId]);
-
+    if (!creatorData) {
         return (
-            <div className="h-min-screen flex flex-col items-center justify-center gap-5 px-5 py-10">
-                <ProfilePicture
-                    creatorId={creatorId}
-                    profilePicture={profilePicture}
-                    setProfilePicture={setProfilePicture}
-                />
-                <h3>@{creatorSlug}</h3>
-                <CreatorLinks
-                    isLinkLoading={isLinkLoading}
-                    creatorLinks={creatorLinks}
-                />
+            <div className="flex flex-col items-center justify-center min-h-screen">
+                <h1 className="text-2xl font-bold mb-4">Criador não encontrado</h1>
+                <p className="text-gray-600">O perfil @{creatorSlug} não existe.</p>
             </div>
         );
-    },
-);
+    }
 
-export default CreatorLinksPage;
+    const { profile, links } = creatorData;
+
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <div className="w-full max-w-md mx-auto text-center">
+                <div className="mb-6">
+                    <ProfilePicture
+                        src={profile.avatar_url}
+                        alt={`Foto de perfil de ${profile.full_name || profile.username}`}
+                        size={120}
+                        className="mx-auto mb-4"
+                    />
+                    <h1 className="text-2xl font-bold mb-2">
+                        {profile.full_name || profile.username}
+                    </h1>
+                    <p className="text-gray-600 mb-1">@{profile.username}</p>
+                    {profile.bio && (
+                        <p className="text-gray-800 mb-4">{profile.bio}</p>
+                    )}
+                </div>
+
+                <CreatorLinks links={links} />
+            </div>
+        </div>
+    );
+}

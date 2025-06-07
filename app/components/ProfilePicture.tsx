@@ -1,38 +1,41 @@
+
+'use client';
+
 import React from 'react';
 import Image from 'next/image';
 
 interface ProfilePictureProps {
-  src?: string;
-  alt?: string;
-  size?: number;
-  className?: string;
+    src?: string;
+    alt: string;
+    size?: number;
+    className?: string;
 }
 
 const ProfilePicture: React.FC<ProfilePictureProps> = ({ 
-  src, 
-  alt = "Profile picture", 
-  size = 200,
-  className = ""
+    src, 
+    alt, 
+    size = 80, 
+    className = '' 
 }) => {
-  const defaultAvatar = "/assets/default-profile-picture.jpg";
+    const defaultImage = '/assets/default-profile-picture.jpg';
+    const imageUrl = src || defaultImage;
 
-  return (
-    <div className={`relative rounded-full overflow-hidden ${className}`} style={{ width: size, height: size }}>
-      <Image
-        src={src || defaultAvatar}
-        alt={alt}
-        width={size}
-        height={size}
-        className="object-cover"
-        unoptimized
-        onError={(e) => {
-          console.error('Error loading profile picture:', src);
-          const target = e.target as HTMLImageElement;
-          target.src = defaultAvatar;
-        }}
-      />
-    </div>
-  );
+    return (
+        <div className={`relative ${className}`} style={{ width: size, height: size }}>
+            <Image
+                src={imageUrl}
+                alt={alt}
+                width={size}
+                height={size}
+                className="rounded-full object-cover"
+                unoptimized
+                onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = defaultImage;
+                }}
+            />
+        </div>
+    );
 };
 
 export default ProfilePicture;

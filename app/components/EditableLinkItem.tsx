@@ -1,39 +1,26 @@
-import React, { useEffect, useState } from 'react'; // Garanta que React, useEffect, useState estão importados
-import {
-    Check,
-    GripVertical,
-    Pencil,
-    ToggleLeft,
-    ToggleRight,
-    X,
-} from 'lucide-react';
-import { Link } from '../types/linkTypes'; // Certifique-se que Link está importado
-import {
-    updateLinkTitle,
-    updateLinkUrl,
-    updateShowLink,
-} from '../utils/profile';
-import { DeleteLinkButton } from './DeleteLinkButton';
+'use client';
 
-// Interface para as props do componente
+import React, { useState } from 'react';
+import { Check, X, Pencil, Trash2 } from 'lucide-react';
+import { Link } from '../types/linkTypes';
+import { updateLink } from '../utils/profile';
+import DeleteLinkButton from './DeleteLinkButton';
+import CharacterLimitedText from './CharacterLimitedText';
+
 interface EditableLinkItemProps {
     link: Link;
     creatorLinks: Link[];
     setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
 }
 
-const EditableLinkItem: React.FC<EditableLinkItemProps> = ({ link, creatorLinks, setCreatorLinks }) => {
-    const [preSubmittedTitle, setPreSubmittedTitle] = useState(link.title);
-    const [editableTitle, setEditableTitle] = useState(link.title);
+const EditableLinkItem: React.FC<EditableLinkItemProps> = ({ 
+    link, 
+    creatorLinks, 
+    setCreatorLinks 
+}) => {
     const [isEditing, setIsEditing] = useState(false);
+    const [editableTitle, setEditableTitle] = useState(link.title);
     const [editableUrl, setEditableUrl] = useState(link.url);
-    const [preSubmittedUrl, setPreSubmittedUrl] = useState(link.url);
-    const [isShow, setIsShow] = useState(link.show);
-
-    const handleShow = () => {
-        setIsShow(!isShow);
-        updateShowLink(link.id);
-    };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableTitle(e.target.value);
@@ -44,56 +31,45 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({ link, creatorLinks,
     };
 
     const handleEditToggle = () => {
-        if (isEditing) {
-            setEditableTitle(preSubmittedTitle);
-            setEditableUrl(preSubmittedUrl);
-        } else {
-            setPreSubmittedTitle(editableTitle);
-            setPreSubmittedUrl(editableUrl);
-        }
         setIsEditing(!isEditing);
+        // Reset to original values if canceling
+        if (isEditing) {
+            setEditableTitle(link.title);
+            setEditableUrl(link.url);
+        }
     };
 
-    const handleEditConfirm = () => {
-        setIsEditing(false);
-        setPreSubmittedTitle(editableTitle);
-        setPreSubmittedUrl(editableUrl);
-        updateLinkTitle(link.id, editableTitle);
-        updateLinkUrl(link.id, editableUrl);
-    };
+    const handleEditConfirm = async () => {
+        try {
+            const updatedLink = await updateLink(link.id, {
+                title: editableTitle,
+                url: editableUrl
+            });
 
-    const CharacterLimitedText = ({
-        text,
-        limit,
-    }: {
-        text: string;
-        limit: number;
-    }) => {
-        const [truncatedText, setTruncatedText] = useState(text);
-
-        useEffect(() => {
-            if (text.length > limit) {
-                setTruncatedText(text.slice(0, limit) + '...');
-            } else {
-                setTruncatedText(text);
+            if (updatedLink) {
+                // Update the local state
+                const updatedLinks = creatorLinks.map(l => 
+                    l.id === link.id ? { ...l, title: editableTitle, url: editableUrl } : l
+                );
+                setCreatorLinks(updatedLinks);
+                setIsEditing(false);
             }
-        }, [text, limit]);
-
-        return truncatedText;
+        } catch (error) {
+            console.error('Error updating link:', error);
+        }
     };
 
     return (
         <div className="flex w-full items-center justify-between rounded-2xl border bg-white p-2 px-6 py-9 shadow">
             <div className="flex flex-col items-center">
-                {/* <GripVertical /> */}
-                <div className="flex basis-5/6 flex-col gap-2 ">
+                <div className="flex basis-5/6 flex-col gap-2">
                     <div className="flex items-center gap-2">
                         {isEditing ? (
                             <input
                                 type="text"
                                 value={editableTitle}
                                 onChange={handleTitleChange}
-                                className="w-full rounded-lg p-1"
+                                className="w-full rounded-lg p-1 border"
                             />
                         ) : (
                             <h6>
@@ -122,44 +98,34 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({ link, creatorLinks,
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <small>
-                            {isEditing ? (
-                                <input
-                                    type="text"
-                                    value={editableUrl}
-                                    onChange={handleUrlChange}
-                                    className="w-full rounded-lg p-1"
-                                />
-                            ) : (
-                                <CharacterLimitedText
-                                    text={editableUrl}
-                                    limit={30}
-                                />
-                            )}
-                        </small>
+                        {isEditing ? (
+                            <input
+                                type="url"
+                                value={editableUrl}
+                                onChange={handleUrlChange}
+                                className="w-full rounded-lg p-1 border"
+                                placeholder="https://example.com"
+                            />
+                        ) : (
+                            <a
+                                href={editableUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline truncate"
+                            >
+                                {editableUrl}
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>
-            {!!!isEditing && (
-                <div className="flex basis-1/6 justify-end gap-2">
-                    {isShow ? (
-                        <ToggleRight
-                            className="cursor-pointer text-[#8129D9]"
-                            onClick={handleShow}
-                        />
-                    ) : (
-                        <ToggleLeft
-                            className="cursor-pointer text-slate-600"
-                            onClick={handleShow}
-                        />
-                    )}
-                    <DeleteLinkButton 
-                                    linkId={link.id} 
-                                    creatorLinks={creatorLinks}
-                                    setCreatorLinks={setCreatorLinks}
-                                />
-                </div>
-            )}
+            <div className="flex items-center gap-2">
+                <DeleteLinkButton 
+                    linkId={link.id}
+                    creatorLinks={creatorLinks}
+                    setCreatorLinks={setCreatorLinks}
+                />
+            </div>
         </div>
     );
 };
