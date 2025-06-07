@@ -1,0 +1,50 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+A integração com Supabase está avançada:
+- Cadastro, login, gestão de links (adicionar, editar, deletar) funcionam.
+- Perfis públicos são exibidos.
+- **O UPLOAD DA FOTO DE PERFIL PARA O SUPABASE STORAGE ESTÁ FUNCIONANDO! (a imagem é enviada e a URL é salva na tabela 'profiles' no Supabase).**
+- O bucket 'avatars' no Supabase Storage está criado com políticas RLS de INSERT/UPDATE (para authenticated) e SELECT (para anon/public com 'bucket_id = 'avatars'').
+- A URL do meu projeto Supabase REAL é "https://vxquljeazujpsufkckhp.supabase.co" (configurada em NEXT_PUBLIC_SUPABASE_URL nos Secrets).
+- O next.config.js tem o domínio "vxquljeazujpsufkckhp.supabase.co" configurado em images.domains e 'unoptimized: true'.
+
+# Problema PERSISTENTE E TEIMOSO: Exibição da Foto de Perfil na UI
+
+1.  **A imagem de perfil NÃO APARECE na UI do aplicativo.**
+2.  **Erro `400 (Bad Request)` ao carregar a imagem, com DOMÍNIO INCORRETO:**
+    * Ocorre ao carregar a imagem (GET request para a URL da imagem) no navegador.
+    * A URL que dá erro é consistentemente `https://3e9d5788-c7f2-45fc-8ec2-e4afe2b53b17-00-35p6v...picard.replit.dev`.
+    * **Esta URL com `picard.replit.dev` NÃO É o meu domínio Supabase real.**
+    * **A URL do Supabase DIRETA** (copiada do painel do Supabase Storage, ex: `https://vxquljeazujpsufkckhp.supabase.co/.../avatar?token=...`) **FUNCIONA PERFEITAMENTE** quando colada em uma nova aba do navegador.
+    * Isso indica que o problema é um **CACHE EXTREMO ou INTERFERÊNCIA do ambiente Replit/Next.js** que está alterando a URL da imagem ou bloqueando seu carregamento.
+3.  **Botão de upload/edição da foto de perfil na UI:** Ele pode ter sumido ou não está claro.
+
+# Minha Tarefa para Você (Replit AI) - REFAZER E RESOLVER ESTE PROBLEMA CRÍTICO:
+
+1.  **RECONSTRUIR / REIMPLEMENTAR DO ZERO a funcionalidade de upload e exibição da foto de perfil no aplicativo.**
+    * **Foco:** Garantir que a imagem de perfil **APAREÇA VISIVELMENTE** na UI após o upload e login, contornando o problema do `picard.replit.dev` e do `400 Bad Request`.
+    * **Componente de UI para a foto:** Onde a imagem é exibida.
+    * **Botão/opção para upload/trocar a foto:** Deve estar claro e acessível na página de admin/perfil do usuário logado.
+    * **Lógica de upload no front-end:** Onde `supabase.storage.from('avatars').update()` (ou `.upload()` com `upsert: true`) é chamado.
+
+2.  **Garantir que a solução NÃO apresente os problemas anteriores:**
+    * **NUNCA use domínios hardcoded** como `dpehbxmmipfxwdjjmuog.supabase.co` ou `3e9d5788-...picard.replit.dev`. **SEMPRE use `process.env.NEXT_PUBLIC_SUPABASE_URL`** para construir as URLs das imagens.
+    * **Utilize o bucket `avatars`** e o caminho `${creatorId}/avatar`.
+    * **A imagem DEVE ser exibida corretamente** sem `400 Bad Request` ou erros de `Invalid src prop` no aplicativo.
+    * **A interface de upload/edição da foto de perfil DEVE ser clara e funcional.**
+
+3.  **Verificar e ajustar todas as partes afetadas do código**, incluindo:
+    * `app/components/ProfilePicture.tsx`
+    * `app/components/ChangeProfilePictureDialog.tsx`
+    * `app/utils/profile.ts` (`uploadProfilePicture`, `getProfilePictureUrl`, `fetchProfilePicture`)
+    * `app/admin/page.tsx` (onde a UI é usada).
+    * `next.config.js` (reconfirme que o `images.domains` está correto e que `unoptimized: true` é usado se necessário para contornar o problema do Replit).
+    * `app/utils/supabaseClient.ts` (garantir que `createBrowserClient` seja usado).
+
+4.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários para o ambiente Replit (como `rm -rf node_modules`, `npm install`).
+
+# Restrições e Preferências:
+- O objetivo principal é fazer a foto de perfil aparecer na UI.
+- Mantenha a arquitetura existente do Next.js e Supabase.
+- Garanta que todas as URLs usem variáveis de ambiente (Secrets) para o domínio Supabase.
+- Foco em uma solução que funcione no ambiente Replit, considerando os desafios de cache/proxy.
