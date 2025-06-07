@@ -1,0 +1,49 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+A integração com Supabase está funcionando (cadastro, login, gestão de links).
+O **upload da foto de perfil para o Supabase Storage está FUNCIONANDO!** (a imagem é enviada e a URL é salva na tabela 'profiles' no Supabase).
+O bucket 'avatars' no Supabase Storage está criado com políticas RLS de INSERT/UPDATE (para authenticated) e SELECT (para anon/public com 'bucket_id = 'avatars'').
+A URL do meu projeto Supabase REAL é "https://vxquljeazujpsufkckhp.supabase.co" (configurada em NEXT_PUBLIC_SUPABASE_URL nos Secrets).
+O next.config.js tem o domínio "vxquljeazujpsufkckhp.supabase.co" configurado em images.domains e 'unoptimized: true'.
+
+# Problemas Atuais Críticos a Resolver (Prioridade Máxima da IA):
+
+1.  **Problema PERSISTENTE e CRÍTICO: Exibição da Foto de Perfil na UI:**
+    * **Sintoma:** A imagem de perfil NÃO APARECE na UI do aplicativo.
+    * **Erro em console:** `400 (Bad Request)` para a requisição da imagem.
+    * **Domínio Incorreto no Erro:** A URL que dá erro mostra `https://3e9d5788-...picard.replit.dev`, o que **NÃO É** meu domínio Supabase real.
+    * **URL Direta Funciona:** A URL da imagem copiada diretamente do Supabase Storage (ex: `https://vxquljeazujpsufkckhp.supabase.co/.../avatar?token=...`) **FUNCIONA PERFEITAMENTE** quando colada em uma nova aba do navegador.
+    * **Hipótese:** Problema de cache extremo ou interferência do ambiente Replit/Next.js que está alterando a URL ou bloqueando seu carregamento.
+
+2.  **Erro de Compilação/Deploy (TypeError em EditableLinkItem):**
+    * Erro: `TypeError: Property 'creatorLinks' does not exist...`; setCreatorLinks: Dispatch<SetStateAction<Link[]>>; }' is not assignable to type 'IntrinsicAttributes & { link: Link; }'. Property 'creatorLinks' does not exist on type 'IntrinsicAttributes & { link: Link; }'.]
+    * Local: `app/admin/page.tsx` (linha 124, onde `<EditableLinkItem>` é usado).
+    * Causa: O componente `EditableLinkItem` e/ou `DeleteLinkButton` não declaram as props `creatorLinks` e `setCreatorLinks`.
+
+# Novas Funcionalidades Essenciais (MVP Linktree) a Implementar:
+
+1.  **Edição de Perfil (Nome de Usuário, Nome Completo, Biografia):**
+    * Adicionar campos de UI para `username`, `full_name`, `bio` na página de admin/perfil.
+    * Implementar a lógica de busca dos dados atuais do perfil e de salvamento das atualizações na tabela `public.profiles` no Supabase (garantindo que o `username` seja único).
+    * A interface deve ter um botão para salvar as alterações.
+
+# Minha Tarefa para Você (Replit AI) - LIBERDADE TOTAL PARA RESOLVER E IMPLEMENTAR:
+
+1.  **Resolva TODOS os problemas críticos acima (Foto de Perfil e TypeError) da forma mais eficiente e definitiva possível.**
+    * Você tem liberdade para refatorar e ajustar qualquer arquivo (`ProfilePicture.tsx`, `ChangeProfilePictureDialog.tsx`, `profile.ts`, `admin/page.tsx`, `next.config.js`, `supabaseClient.ts`, `EditableLinkItem.tsx`, `DeleteLinkButton.tsx`) conforme necessário para garantir que tudo funcione perfeitamente.
+    * O objetivo é que a foto de perfil **apareça visivelmente** e que o aplicativo compile e funcione sem erros.
+
+2.  **Implemente a funcionalidade de Edição de Perfil** (username, full_name, bio) no `admin/page.tsx` ou em um componente adequado.
+
+3.  **Mantenha o LAYOUT VISUAL EXISTENTE do site.** Faça apenas as modificações necessárias para adicionar os elementos de UI da nova funcionalidade (campos de edição, botões) ou para corrigir problemas. **Não redesenhe a estrutura geral da página.**
+
+4.  **Trate os Avisos de Compilação/Runtime (Warnings) e Code Health:**
+    * Se possível, adicione os comandos `npx update-browserslist-db@latest` e `npm audit fix` ao build (ou instrua o usuário a rodá-los).
+    * Trate o aviso de `Critical dependency` do Supabase Realtime.
+
+5.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários para o ambiente Replit (como `rm -rf node_modules`, `npm install`).
+
+# Restrições e Preferências:
+- O site deve funcionar perfeitamente no ambiente Replit.
+- Manter o layout visual existente.
+- Garanta que todas as URLs usem variáveis de ambiente (Secrets) para o domínio Supabase.
