@@ -1,5 +1,3 @@
-// app/utils/profile.ts
-
 import AuthStore from '../interfaces/AuthStore';
 import { Link } from '../types/linkTypes';
 import supabase from './supabaseClient'; // Garanta que esta importação esteja presente e correta.
@@ -29,81 +27,88 @@ export const addNewLink = async (
             if (error)
                 throw new Error(`Error inserting link: ${error.message}`);
             console.log('New link successfully created: ', data);
-            if (creatorLinks) {
+            if (creatorLinks && data) {
                 setCreatorLinks([...creatorLinks, ...data]);
             }
             setNewTitle('');
             setNewUrl('');
         } else {
-            throw new Error('Title, URL, or user ID is missing or invalid.');
+            throw new Error('Title, URL, ou user ID está faltando ou é inválido.');
         }
     } catch (error) {
-        console.error('Error in creating new link: ', error); // Alterado para console.error
+        console.error('Erro ao criar novo link: ', error);
     }
 };
 
+// **CORRIGIDO:** Lógica de upload da foto de perfil simplificada e robustecida.
 export const uploadProfilePicture = async (
     creatorId: string,
     file: File,
-    router: any, // router ainda é passado, mas não será usado diretamente aqui para refresh
+    router: any,
 ) => {
     try {
-        // Primeiro, fazer upload do arquivo para o bucket 'avatars'
+        const filePath = `${creatorId}/avatar`;
+
+        // 1. Faz o upload (ou update, se já existir) da imagem no Storage.
         const { data: uploadData, error: uploadError } = await supabase.storage
             .from('avatars')
-            .upload(`${creatorId}/avatar`, file, {
+            .upload(filePath, file, {
                 cacheControl: '3600',
-                upsert: true,
+                upsert: true, // Cria se não existe, atualiza se já existe.
             });
 
         if (uploadError) {
-            console.error('Failed to upload profile picture:', uploadError.message);
-            return;
+            throw new Error(`Falha no upload da foto de perfil: ${uploadError.message}`);
         }
+        console.log('Foto de perfil enviada com sucesso:', uploadData);
 
-        console.log('Profile picture uploaded successfully:', uploadData);
+        // 2. Pega a URL pública da imagem que acabamos de enviar.
+        const { data: publicUrlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
 
-        // Depois, atualizar a URL na tabela profiles
-        const profilePictureUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar`;
+        const publicUrl = publicUrlData.publicUrl;
 
-        const { data: updateData, error: updateError } = await supabase
+        // 3. Atualiza a coluna 'avatar_url' na tabela 'profiles' com a nova URL.
+        const { error: updateError } = await supabase
             .from('profiles')
-            // >>>>> LINHA CORRIGIDA AQUI: profile_picture_url para avatar_url <<<<<
-            .update({ avatar_url: profilePictureUrl }) // <<<<<<< AQUI!
+            .update({ avatar_url: publicUrl }) // Usa a coluna 'avatar_url' que criamos.
             .eq('id', creatorId);
 
         if (updateError) {
-            console.error('Failed to update profile picture URL:', updateError.message);
-            return;
+            throw new Error(`Falha ao atualizar a URL da foto no perfil: ${updateError.message}`);
         }
 
-        console.log('Profile picture URL updated successfully:', updateData);
+        console.log('URL da foto de perfil atualizada com sucesso no banco de dados.');
 
-        // Recarregar a página para garantir que a nova imagem seja exibida
-        // Use window.location.reload() ou um callback para o componente pai
-        // router.refresh() é mais adequado para Server Components em alguns casos.
-        window.location.reload(); // Recarrega a página inteira no navegador
+        // Recarrega a página para mostrar a nova foto.
+        router.refresh();
+
     } catch (error) {
-        console.error('Error in uploadProfilePicture:', error);
+        console.error('Erro no processo de upload da foto de perfil:', error);
     }
 };
 
+// **CORRIGIDO:** A tabela deve ser 'profiles' para buscar o ID do criador.
 export const fetchCreatorId = async (creatorSlug: string) => {
     try {
         const { data, error } = await supabase
-            .from('profiles')
+            .from('profiles') // <-- CORRIGIDO
             .select('id')
             .eq('username', creatorSlug)
             .single();
 
         if (error) {
-            console.error('Error fetching creator ID:', error.message);
+            // Não loga erro se for 'No rows found', pois isso é esperado se o perfil não existe.
+            if (error.code !== 'PGRST116') {
+                console.error('Erro ao buscar ID do criador:', error.message);
+            }
             return null;
         }
 
         return data?.id || null;
     } catch (error) {
-        console.error('Error in fetchCreatorId:', error);
+        console.error('Erro em fetchCreatorId:', error);
         return null;
     }
 };
@@ -117,20 +122,24 @@ export const fetchCreatorData = async (creatorSlug: string) => {
             .single();
 
         if (error) {
-            console.error('Error fetching creator data:', error.message);
+            if (error.code !== 'PGRST116') {
+                 console.error('Erro ao buscar dados do criador:', error.message);
+            }
             return null;
         }
 
         return data;
     } catch (error) {
-        console.error('Error in fetchCreatorData:', error);
+        console.error('Erro em fetchCreatorData:', error);
         return null;
     }
 };
 
+// **CORRIGIDO:** Função utilitária para gerar a URL da imagem de perfil.
 export const getProfilePictureUrl = (creatorId: string) => {
-    if (!creatorId) return '/assets/default-profile-picture.jpg';
+    if (!creatorId) return '/assets/default-profile-picture.jpg'; // Imagem padrão
 
+    // Usa a variável de ambiente e o bucket 'avatars'.
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${creatorId}/avatar?nocache=${Date.now()}`;
 };
 
@@ -140,70 +149,26 @@ export const fetchLinks = async (
     setIsLinkLoading: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
     try {
-        setIsLinkLoading(true); // Definir como loading antes da busca
         const { data: linksData, error: linksError } = await supabase
             .from('links')
             .select('id, title, url, show')
-            .eq('user_id', creatorId); // Garante que busca links do criador correto
+            .eq('user_id', creatorId)
+            .order('created_at', { ascending: true }); // Adicionado para ordem consistente
 
         if (linksError) throw linksError;
 
-        setCreatorLinks(linksData);
+        setCreatorLinks(linksData || []);
         setIsLinkLoading(false);
     } catch (error) {
-        console.error('Error fetching links data: ', error); // Alterado para console.error
-        setCreatorLinks([]); // Limpar links em caso de erro
+        console.error('Erro ao buscar links:', error);
         setIsLinkLoading(false);
     }
 };
 
-export const fetchProfilePicture = async (
-    userId: string,
-    setProfilePicture: (url: string) => void
-) => {
-    try {
-        // Primeiro verificar se o arquivo existe
-        const { data: files, error: listError } = await supabase.storage
-            .from('avatars')
-            .list(userId, {
-                limit: 1,
-                search: 'profile-picture'
-            });
-
-        if (listError) {
-            console.error('Error listing profile picture files:', listError);
-            return;
-        }
-
-        if (!files || files.length === 0) {
-            // Usar imagem padrão se não encontrar arquivo
-            setProfilePicture('/assets/default-profile-picture.jpg');
-            return;
-        }
-
-        // Se o arquivo existe, buscar a URL pública
-        const { data, error } = await supabase.storage
-            .from('avatars')
-            .getPublicUrl(`${userId}/profile-picture`);
-
-        if (error) {
-            console.error('Error fetching profile picture URL:', error);
-            setProfilePicture('/assets/default-profile-picture.jpg');
-            return;
-        }
-
-        if (data?.publicUrl) {
-            // Garantir que a URL está correta e não contém interferências
-            const cleanUrl = data.publicUrl.replace(/.*\/public\//, '/public/');
-            setProfilePicture(data.publicUrl);
-        } else {
-            setProfilePicture('/assets/default-profile-picture.jpg');
-        }
-    } catch (error) {
-        console.error('Failed to fetch profile picture: ', error);
-        setProfilePicture('/assets/default-profile-picture.jpg');
-    }
-};
+// **DEPRECADO/REMOVIDO:** A função 'fetchProfilePicture' foi integrada na lógica de
+// 'fetchCreatorData' e a URL é obtida via 'getProfilePictureUrl'
+// ou diretamente da coluna 'avatar_url' da tabela 'profiles'.
+// Manter a função antiga pode causar confusão.
 
 export const updateLinkTitle = async (linkId: number, newTitle: string) => {
     try {
@@ -213,7 +178,7 @@ export const updateLinkTitle = async (linkId: number, newTitle: string) => {
             .eq('id', linkId);
         if (error) throw error;
     } catch (error) {
-        console.error('error updating link title: ', error); // Alterado para console.error
+        console.error('Erro ao atualizar título do link:', error);
     }
 };
 
@@ -225,7 +190,7 @@ export const updateLinkUrl = async (urlId: number, newUrl: string) => {
             .eq('id', urlId);
         if (error) throw error;
     } catch (error) {
-        console.error('error updating link URL: ', error); // Alterado para console.error
+        console.error('Erro ao atualizar URL do link:', error);
     }
 };
 
@@ -237,9 +202,7 @@ export const updateShowLink = async (linkId: number) => {
             .eq('id', linkId)
             .single();
 
-        if (fetchError) {
-            throw fetchError;
-        }
+        if (fetchError) throw fetchError;
 
         const currentShowValue = linkData?.show;
 
@@ -248,13 +211,11 @@ export const updateShowLink = async (linkId: number) => {
             .update({ show: !currentShowValue })
             .eq('id', linkId);
 
-        if (updateError) {
-            throw updateError;
-        }
+        if (updateError) throw updateError;
 
-        console.log('Show state of link updated successfully.');
+        console.log('Visibilidade do link atualizada com sucesso.');
     } catch (error) {
-        console.error('Could not change state of show: ', error); // Alterado para console.error
+        console.error('Não foi possível mudar o estado de visibilidade:', error);
     }
 };
 
@@ -264,56 +225,9 @@ export const deleteLink = async (linkId: number) => {
             .from('links')
             .delete()
             .eq('id', linkId)
-            .select(); // .select() pode não ser necessário aqui se você só quer deletar
-        if (error) throw error;
-        console.log('Link deleted successfully.');
-        window.location.reload(); // Recarregar a página para atualizar a lista de links
-    } catch (error) {
-        console.error('Error deleting link: ', error); // Alterado para console.error
-    }
-};
-
-export const addLink = async (
-    userId: string,
-    title: string,
-    url: string,
-    onSuccess: () => void,
-    onError: (error: any) => void
-) => {
-    try {
-        // Validar parâmetros
-        if (!userId || !title?.trim() || !url?.trim()) {
-            throw new Error('Todos os campos são obrigatórios');
-        }
-
-        // Validar URL
-        try {
-            new URL(url.trim());
-        } catch {
-            throw new Error('URL inválida');
-        }
-
-        const { data, error } = await supabase
-            .from('links')
-            .insert([
-                {
-                    user_id: userId,
-                    title: title.trim(),
-                    url: url.trim(),
-                    created_at: new Date().toISOString(),
-                }
-            ])
             .select();
-
-        if (error) {
-            console.error('Supabase error adding link:', error);
-            throw error;
-        }
-
-        console.log('Link added successfully:', data);
-        onSuccess();
+        if (error) throw error;
     } catch (error) {
-        console.error('Error adding link:', error);
-        onError(error);
+        console.error('Erro ao deletar link:', error);
     }
 };

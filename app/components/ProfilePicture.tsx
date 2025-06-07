@@ -1,63 +1,50 @@
-
-import React, { useState } from 'react';
 import Image from 'next/image';
+import React from 'react';
+import { ChangeProfilePictureDialog } from './ChangeProfilePictureDialog';
 
-interface ProfilePictureProps {
-    profilePicture: string;
-    username: string;
-    size?: number;
-    className?: string;
-}
-
-const ProfilePicture: React.FC<ProfilePictureProps> = ({
+const ProfilePicture = ({
+    creatorId,
     profilePicture,
-    username,
-    size = 120,
-    className = ''
+    setProfilePicture,
+    router,
+}: {
+    creatorId: string;
+    profilePicture: string;
+    setProfilePicture: React.Dispatch<React.SetStateAction<string>>;
+    router?: any;
 }) => {
-    const [imageError, setImageError] = useState(false);
-    const [imageLoading, setImageLoading] = useState(true);
-
-    const handleImageError = () => {
-        setImageError(true);
-        setImageLoading(false);
-    };
-
-    const handleImageLoad = () => {
-        setImageLoading(false);
-        setImageError(false);
-    };
-
-    // Usar imagem padrão se não houver profilePicture ou se houver erro
-    const imageSrc = imageError || !profilePicture || profilePicture === '' 
-        ? '/assets/default-profile-picture.jpg' 
-        : profilePicture;
-
     return (
-        <div className={`relative ${className}`} style={{ width: size, height: size }}>
-            {imageLoading && (
-                <div 
-                    className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-full"
-                    style={{ width: size, height: size }}
-                >
-                    <div className="text-gray-500 text-sm">Carregando...</div>
-                </div>
+        <div className="relative inline-block">
+            <div className="relative">
+                {creatorId && profilePicture ? (
+                    <Image
+                        src={profilePicture}
+                        alt="profile_picture"
+                        width={0}
+                        height={0}
+                        sizes={'1'}
+                        className="h-48 w-48 rounded-full object-cover shadow-lg"
+                        priority
+                    />
+                ) : (
+                    <Image
+                        src={'/assets/default-profile-picture.jpg'}
+                        alt="profile_picture"
+                        width={0}
+                        height={0}
+                        sizes={'1'}
+                        className="h-48 w-48 rounded-full object-cover shadow-lg"
+                        priority
+                    />
+                )}
+            </div>
+            {router && (
+                <ChangeProfilePictureDialog
+                    router={router}
+                    creatorId={creatorId}
+                    setProfilePicture={setProfilePicture}
+                />
             )}
-            <Image
-                src={imageSrc}
-                alt={`Foto de perfil de ${username}`}
-                width={size}
-                height={size}
-                className="rounded-full object-cover shadow-lg"
-                onError={handleImageError}
-                onLoad={handleImageLoad}
-                style={{ 
-                    display: imageLoading ? 'none' : 'block',
-                    width: size,
-                    height: size
-                }}
-                priority
-            />
         </div>
     );
 };
