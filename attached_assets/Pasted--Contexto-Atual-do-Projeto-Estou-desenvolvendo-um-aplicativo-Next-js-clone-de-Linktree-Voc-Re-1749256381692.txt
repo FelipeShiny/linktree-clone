@@ -1,0 +1,33 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree).
+Você (Replit AI) já fez refatorações para upload e exibição de foto de perfil.
+O domínio real do meu projeto Supabase é "vxquljeazujpsufkckhp.supabase.co".
+As URLs no código para Storage (em profile.ts e ChangeProfilePictureDialog.tsx) já estão usando process.env.NEXT_PUBLIC_SUPABASE_URL e /avatars/.
+
+# Problemas Atuais:
+
+1.  **ReferenceError: Cannot access 'setIsLinkLoading' before initialization**
+    * Local: `app/admin/page.tsx` (linha 45)
+    * Causa: A variável `setIsLinkLoading` está sendo usada dentro do `useEffect` antes de sua declaração `const [isLinkLoading, setIsLinkLoading] = useState(...)`.
+
+2.  **Error: Invalid src prop (...) hostname "vxquljeazujpsufkckhp.supabase.co" is not configured under images in your `next.config.js`**
+    * Ocorre ao carregar imagens, inclusive em páginas de perfil público.
+    * O domínio "vxquljeazujpsufkckhp.supabase.co" É o domínio REAL do meu Supabase.
+    * Causa: O Next.js não está reconhecendo este hostname permitido no `next.config.js`.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Resolver o `ReferenceError` em `app/admin/page.tsx`:**
+    * Garanta que a declaração `const [isLinkLoading, setIsLinkLoading] = useState<boolean>(false);` esteja posicionada CORRETAMENTE no arquivo, antes de qualquer uso de `setIsLinkLoading` dentro dos `useEffect`s.
+
+2.  **Resolver o erro de hostname não configurado no `next.config.js`:**
+    * **Verifique o `next.config.js` e garanta que o domínio "vxquljeazujpsufkckhp.supabase.co" esteja configurado corretamente na propriedade `images.domains`.**
+    * Se necessário, force uma revalidação ou uma maneira que o Next.js reconheça a configuração, talvez adicionando um `unoptimized: true` temporariamente ou usando uma abordagem diferente para `images.domains` se o problema for de ambiente. **A solução deve garantir que o Next.js pare de reclamar deste hostname.**
+
+3.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas.**
+
+# Restrições e Preferências:
+- Foque apenas em resolver estes dois erros.
+- Não altere outras funcionalidades ou arquivos a menos que seja estritamente necessário.
+- Mantenha a arquitetura existente.
+- O domínio "vxquljeazujpsufkckhp.supabase.co" É o domínio correto.
