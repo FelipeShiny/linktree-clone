@@ -9,9 +9,9 @@ import DeleteLinkButton from './DeleteLinkButton';
 import CharacterLimitedText from './CharacterLimitedText';
 
 interface EditableLinkItemProps {
-    link: Link;
-    creatorLinks: Link[];
-    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
+  link: Link;
+  creatorLinks: Link[];
+  setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
 }
 
 const EditableLinkItem: React.FC<EditableLinkItemProps> = ({ 

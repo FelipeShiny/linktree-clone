@@ -1,0 +1,33 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+Você (Replit AI) fez refatorações extensivas.
+O layout visual do site está quase 100% pronto.
+
+# Problemas Atuais Críticos a Resolver (Prioridade Máxima da IA):
+
+1.  **`TypeError` em `ChangeProfilePictureDialog` (Props faltando):**
+    * Erro: `Property 'onImageUpdate' does not exist on type 'IntrinsicAttributes & ChangeProfilePictureDialogProps'.`
+    * Local: `app/admin/page.tsx` (linha 145, onde `<ChangeProfilePictureDialog>` é usado).
+    * Causa: A interface `ChangeProfilePictureDialogProps` (em `app/components/ChangeProfilePictureDialog.tsx`) não declara a prop `onImageUpdate`.
+
+2.  **`Attempted import error: 'uploadProfilePicture' is not exported from '../utils/profile'`**
+    * Local: `app/components/ChangeProfilePictureDialog.tsx` (e outros arquivos).
+    * Causa: A função `uploadProfilePicture` em `app/utils/profile.ts` não está sendo exportada corretamente ou foi renomeada/removida/refatorada de forma que não é mais acessível.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Corrigir o `TypeError` nas props de `ChangeProfilePictureDialog`:**
+    * Atualize a interface `ChangeProfilePictureDialogProps` (em `app/components/ChangeProfilePictureDialog.tsx`) para incluir a prop `onImageUpdate: (newAvatarUrl: string) => void;`.
+    * Garanta que esta prop seja usada corretamente dentro do componente `ChangeProfilePictureDialog`.
+
+2.  **Resolver o `Attempted import error: 'uploadProfilePicture' is not exported`:**
+    * Analise `app/utils/profile.ts` e `app/components/ChangeProfilePictureDialog.tsx`.
+    * Corrija a exportação de `uploadProfilePicture` em `profile.ts` e/ou sua importação em `ChangeProfilePictureDialog.tsx` para que a função seja reconhecida e utilizável. Se a função foi substituída, atualize a chamada para a nova função.
+
+3.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- Foque APENAS em resolver estes dois erros.
+- Não altere funcionalidades ou arquivos que não estão diretamente ligados a estes erros.
+- Mantenha o layout visual existente.
+- Garanta que a função de upload da foto de perfil funcione após a correção.
