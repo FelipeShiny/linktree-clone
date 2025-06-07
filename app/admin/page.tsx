@@ -10,7 +10,6 @@ import { Eye } from 'lucide-react';
 import NextLink from 'next/link';
 import EnterUrl from '../components/EnterUrl';
 import EditableLinkItem from '../components/EditableLinkItem';
-// >>>>> LINHA ADICIONADA: Importa o componente de diálogo da foto de perfil <<<<<
 import { ChangeProfilePictureDialog } from '../components/ChangeProfilePictureDialog';
 
 const Admin = () => {
@@ -20,6 +19,10 @@ const Admin = () => {
     const [creatorUsername, setCreatorUsername] = useState<string | undefined>(
         '',
     );
+
+    // Adicionado: Estados para o novo link (URL e Título)
+    const [newUrl, setNewUrl] = useState<string>('');
+    const [newTitle, setNewTitle] = useState<string>('');
 
     // check authentication
     const router = useRouter();
@@ -37,21 +40,21 @@ const Admin = () => {
     const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
     const [profilePicture, setProfilePicture] = useState<string>('');
     const [isLinkLoading, setIsLinkLoading] = useState<boolean>(false);
-    
+
     useEffect(() => {
         if (creatorId) {
             fetchLinks(creatorId, setCreatorLinks, setIsLinkLoading);
             const url = getProfilePictureUrl(creatorId);
             setProfilePicture(url);
         }
-    }, [creatorId]);
+    }, [creatorId, setIsLinkLoading, setProfilePicture]);
 
     return (
         <div className="min-h-screen bg-gray-100 p-4">
             <header className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Admin Dashboard</h1>
                 <NextLink
-                    href={`/${creatorUsername || creatorId}`} // Link para a página pública
+                    href={`/${creatorUsername || creatorId}`}
                     className="flex items-center text-blue-600 hover:underline"
                 >
                     <Eye className="h-5 w-5 mr-1" /> View Public Page
@@ -61,9 +64,7 @@ const Admin = () => {
             <section className="mb-8 p-6 bg-white rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Profile Settings</h2>
                 <div className="flex items-center space-x-4">
-                    {/* Componente ProfilePicture renderiza a imagem */}
                     <ProfilePicture creatorId={creatorId} username={creatorUsername} size={96} />
-                    {/* Componente ChangeProfilePictureDialog para o botão de lápis */}
                     <ChangeProfilePictureDialog
                         creatorId={creatorId}
                         router={router}
@@ -71,15 +72,17 @@ const Admin = () => {
                     />
                     <div>
                         <p className="text-lg font-medium">@{creatorUsername || creatorId}</p>
-                        {/* Outros campos do perfil como nome completo, bio, etc. iriam aqui */}
                     </div>
                 </div>
-                {/* Você pode adicionar campos de edição para username, full_name, bio aqui */}
             </section>
 
             <section className="mb-8 p-6 bg-white rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Your Links</h2>
                 <EnterUrl
+                    newUrl={newUrl} // Adicionado
+                    setNewUrl={setNewUrl} // Adicionado
+                    newTitle={newTitle} // Adicionado
+                    setNewTitle={setNewTitle} // Adicionado
                     creatorLinks={creatorLinks}
                     setCreatorLinks={setCreatorLinks}
                 />
@@ -104,4 +107,4 @@ const Admin = () => {
     );
 };
 
-export default Admin; // Garante que o componente Admin seja exportado
+export default Admin;
