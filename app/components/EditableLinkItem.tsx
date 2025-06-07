@@ -22,21 +22,11 @@ interface EditableLinkItemProps {
     setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
 }
 
-export const EditableLinkItem = ({ link, creatorLinks, setCreatorLinks }: EditableLinkItemProps) => {ROPS
-interface EditableLinkItemProps {
-    link: Link;
-    // ADICIONE ESTAS DUAS LINHAS:
-    creatorLinks: Link[];
-    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
-}
-
-const EditableLinkItem = ({
-    link,
-    // ADICIONE ESTAS DUAS LINHAS NO DESTRUCTURING DE PROPS:
-    creatorLinks,
-    setCreatorLinks,
-}: EditableLinkItemProps) => {
-    // ... restante do código do componente
+const EditableLinkItem = ({ 
+    link, 
+    creatorLinks, 
+    setCreatorLinks 
+}) => {
     const [preSubmittedTitle, setPreSubmittedTitle] = useState(link.title);
     const [editableTitle, setEditableTitle] = useState(link.title);
     const [isEditing, setIsEditing] = useState(false);

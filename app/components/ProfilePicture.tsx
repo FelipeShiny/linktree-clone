@@ -1,67 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { ChangeProfilePictureDialog } from './ChangeProfilePictureDialog';
+'use client';
+
+import React from 'react';
+import Image from 'next/image';
 
 interface ProfilePictureProps {
-    creatorId: string;
-    isEditable?: boolean;
-    profilePicture: string;
-    setProfilePicture: (url: string) => void;
+    profilePicture?: string;
+    username?: string;
+    size?: number;
+    className?: string;
 }
 
-export const ProfilePicture = ({ creatorId, isEditable = false, profilePicture, setProfilePicture }: ProfilePictureProps) => {
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const [imageSrc, setImageSrc] = useState('/assets/default-profile-picture.jpg');
+const ProfilePicture: React.FC<ProfilePictureProps> = ({
+    profilePicture,
+    username = 'User',
+    size = 100,
+    className = ''
+}) => {
+    const defaultProfilePicture = '/assets/default-profile-picture.jpg';
 
-    useEffect(() => {
-        if (profilePicture) {
-            // Verificar se a URL é válida do Supabase
-            if (profilePicture.includes('supabase.co')) {
-                console.log('URL da imagem do Supabase:', profilePicture);
-                setImageSrc(profilePicture);
-            } else {
-                console.log('URL inválida, usando padrão');
-                setImageSrc('/assets/default-profile-picture.jpg');
-            }
-        }
-    }, [profilePicture]);
-
-    const handleImageLoad = () => {
-        console.log('Imagem carregada com sucesso:', imageSrc);
-        setImageLoaded(true);
-    };
-
-    const handleImageError = () => {
-        console.log('Erro ao carregar imagem, usando padrão');
-        setImageSrc('/assets/default-profile-picture.jpg');
-        setImageLoaded(true);
-    };
+    // Use the profile picture URL directly if it exists, otherwise use default
+    const imageSource = profilePicture || defaultProfilePicture;
 
     return (
-        <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+        <div className={`relative ${className}`}>
+            {profilePicture ? (
                 <img
-                    src={imageSrc}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                    onLoad={handleImageLoad}
-                    onError={handleImageError}
-                    style={{
-                        display: imageLoaded ? 'block' : 'none'
+                    src={imageSource}
+                    alt={`${username}'s profile picture`}
+                    width={size}
+                    height={size}
+                    className="rounded-full object-cover"
+                    onError={(e) => {
+                        console.error('Error loading profile picture:', e);
+                        (e.target as HTMLImageElement).src = defaultProfilePicture;
                     }}
                 />
-                {!imageLoaded && (
-                    <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
-                        <div className="text-gray-400 text-xs">Loading...</div>
-                    </div>
-                )}
-            </div>
-            {isEditable && (
-                <ChangeProfilePictureDialog 
-                    creatorId={creatorId}
-                    profilePicture={profilePicture}
-                    setProfilePicture={setProfilePicture}
+            ) : (
+                <Image
+                    src={defaultProfilePicture}
+                    alt={`${username}'s profile picture`}
+                    width={size}
+                    height={size}
+                    className="rounded-full object-cover"
                 />
             )}
         </div>
     );
 };
+
+export default ProfilePicture;
