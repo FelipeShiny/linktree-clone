@@ -1,52 +1,70 @@
+
 'use client';
 
-import React from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../utils/supabaseClient';
 
 interface ProfilePictureProps {
-  userId?: string;
-  avatarUrl?: string | null;
-  size?: number;
-  className?: string;
-  src?: string;
-  alt?: string;
+    userId: string;
+    className?: string;
+    alt?: string;
 }
 
-const ProfilePicture: React.FC<ProfilePictureProps> = ({
-  userId,
-  avatarUrl,
-  size = 80,
-  className = '',
-  src,
-  alt = 'Profile Picture'
-}) => {
-  // Use src prop first, then avatarUrl, then default
-  let imageUrl = src || avatarUrl || '/assets/default-profile-picture.jpg';
+export default function ProfilePicture({ userId, className = '', alt = 'Profile Picture' }: ProfilePictureProps) {
+    const [imageUrl, setImageUrl] = useState<string>('/assets/default-profile-picture.jpg');
+    const [loading, setLoading] = useState(true);
 
-  // If we have a Supabase URL, ensure it's properly formatted
-  if (imageUrl && imageUrl.includes('supabase.co')) {
-    // Ensure the URL is complete and properly formatted
-    if (!imageUrl.startsWith('http')) {
-      imageUrl = `https://vxquljeazujpsufkckhp.supabase.co/storage/v1/object/public/profile-pictures/${imageUrl}`;
+    useEffect(() => {
+        const loadProfilePicture = async () => {
+            try {
+                // Get the profile picture filename from the users table
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('profile_picture')
+                    .eq('id', userId)
+                    .single();
+
+                if (userError || !userData?.profile_picture) {
+                    setImageUrl('/assets/default-profile-picture.jpg');
+                    setLoading(false);
+                    return;
+                }
+
+                // Get the public URL for the image
+                const { data } = supabase.storage
+                    .from('profile-pictures')
+                    .getPublicUrl(userData.profile_picture);
+
+                if (data?.publicUrl) {
+                    setImageUrl(data.publicUrl);
+                }
+            } catch (error) {
+                console.error('Error loading profile picture:', error);
+                setImageUrl('/assets/default-profile-picture.jpg');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (userId) {
+            loadProfilePicture();
+        }
+    }, [userId]);
+
+    if (loading) {
+        return (
+            <div className={`animate-pulse bg-gray-300 rounded-full ${className}`}>
+                <div className="w-full h-full bg-gray-300 rounded-full"></div>
+            </div>
+        );
     }
-  }
 
-  return (
-    <div className={`relative ${className}`} style={{ width: size, height: size }}>
-      <Image
-        src={imageUrl}
-        alt={alt}
-        width={size}
-        height={size}
-        className="rounded-full object-cover"
-        priority
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.src = '/assets/default-profile-picture.jpg';
-        }}
-      />
-    </div>
-  );
-};
-
-export default ProfilePicture;
+    return (
+        <img
+            src={imageUrl}
+            alt={alt}
+            className={`rounded-full object-cover ${className}`}
+            onError={() => setImageUrl('/assets/default-profile-picture.jpg')}
+        />
+    );
+}

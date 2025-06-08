@@ -133,6 +133,21 @@ const AdminPage = observer(() => {
         setTimeout(() => setMessage(''), 3000);
     };
 
+    const refreshLinks = async () => {
+        if (profile?.id) {
+            setIsLinkLoading(true);
+            try {
+                const links = await fetchLinks(profile.id);
+                setCreatorLinks(links);
+            } catch (error) {
+                console.error("Erro ao carregar links:", error);
+                setCreatorLinks([]);
+            } finally {
+                setIsLinkLoading(false);
+            }
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -255,10 +270,13 @@ const AdminPage = observer(() => {
             {/* Seção de Links */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <h2 className="text-xl font-semibold mb-4">Gerenciar Links</h2>
-                
+
                 {/* Adicionar novo link */}
                 <div className="mb-6">
-                    <EnterUrl setCreatorLinks={setCreatorLinks} />
+                    <EnterUrl 
+                        creatorId={authStore.user?.id || ''} 
+                        onLinkAdded={refreshLinks}
+                    />
                 </div>
 
                 {/* Lista de links existentes */}

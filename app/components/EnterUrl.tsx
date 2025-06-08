@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react'; // Garanta que React esteja importado
+import React, { useState } from 'react'; // Garanta que React esteja importado
 import { addNewLink } from '../utils/profile';
 import { Link } from '../types/linkTypes';
 
