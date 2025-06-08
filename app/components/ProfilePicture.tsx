@@ -1,52 +1,52 @@
-
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 
 interface ProfilePictureProps {
-    src?: string | null;
-    alt: string;
-    size?: number | string;
-    className?: string;
+  userId?: string;
+  avatarUrl?: string | null;
+  size?: number;
+  className?: string;
+  src?: string;
+  alt?: string;
 }
 
-const ProfilePicture: React.FC<ProfilePictureProps> = ({ 
-    src, 
-    alt, 
-    size = 80, 
-    className = "" 
+const ProfilePicture: React.FC<ProfilePictureProps> = ({
+  userId,
+  avatarUrl,
+  size = 80,
+  className = '',
+  src,
+  alt = 'Profile Picture'
 }) => {
-    const [imageError, setImageError] = useState(false);
-    const defaultImage = "/assets/default-profile-picture.jpg";
-    
-    // Garantir que size seja sempre um número
-    const numericSize = typeof size === 'string' ? parseInt(size) || 80 : size;
-    
-    // Usar imagem padrão se não há src ou houve erro
-    const imageSrc = (imageError || !src) ? defaultImage : src;
+  // Use src prop first, then avatarUrl, then default
+  let imageUrl = src || avatarUrl || '/assets/default-profile-picture.jpg';
 
-    const handleImageError = () => {
-        setImageError(true);
-    };
+  // If we have a Supabase URL, ensure it's properly formatted
+  if (imageUrl && imageUrl.includes('supabase.co')) {
+    // Ensure the URL is complete and properly formatted
+    if (!imageUrl.startsWith('http')) {
+      imageUrl = `https://vxquljeazujpsufkckhp.supabase.co/storage/v1/object/public/profile-pictures/${imageUrl}`;
+    }
+  }
 
-    return (
-        <div 
-            className={`relative overflow-hidden rounded-full ${className}`} 
-            style={{ width: numericSize, height: numericSize }}
-        >
-            <Image
-                src={imageSrc}
-                alt={alt}
-                width={numericSize}
-                height={numericSize}
-                className="object-cover"
-                onError={handleImageError}
-                priority={numericSize > 100}
-                unoptimized={true}
-            />
-        </div>
-    );
+  return (
+    <div className={`relative ${className}`} style={{ width: size, height: size }}>
+      <Image
+        src={imageUrl}
+        alt={alt}
+        width={size}
+        height={size}
+        className="rounded-full object-cover"
+        priority
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = '/assets/default-profile-picture.jpg';
+        }}
+      />
+    </div>
+  );
 };
 
 export default ProfilePicture;

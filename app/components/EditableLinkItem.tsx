@@ -1,11 +1,9 @@
-
 'use client';
 
 import React, { useState } from 'react';
-import { Check, X, Pencil } from 'lucide-react';
+import { Check, Edit, Trash, X } from 'lucide-react';
 import { Link } from '../types/linkTypes';
-import { updateLink } from '../utils/profile';
-import DeleteLinkButton from './DeleteLinkButton';
+import { updateLink, deleteLink } from '../utils/profile';
 import CharacterLimitedText from './CharacterLimitedText';
 
 interface EditableLinkItemProps {
@@ -61,7 +59,7 @@ const EditableLinkItem: React.FC<EditableLinkItemProps> = ({
                 setCreatorLinks(updatedLinks);
                 setIsEditing(false);
                 setMessage('Link atualizado!');
-                
+
                 // Clear message after 2 seconds
                 setTimeout(() => setMessage(''), 2000);
             } else {

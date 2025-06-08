@@ -252,6 +252,34 @@ const AdminPage = observer(() => {
                 </div>
             </div>
 
+            {/* Seção de Links */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 className="text-xl font-semibold mb-4">Gerenciar Links</h2>
+                
+                {/* Adicionar novo link */}
+                <div className="mb-6">
+                    <EnterUrl setCreatorLinks={setCreatorLinks} />
+                </div>
+
+                {/* Lista de links existentes */}
+                <div className="space-y-3">
+                    {isLinkLoading ? (
+                        <div className="text-center">Carregando links...</div>
+                    ) : creatorLinks && creatorLinks.length > 0 ? (
+                        creatorLinks.map((link: Link) => (
+                            <EditableLinkItem
+                                key={link.id}
+                                link={link}
+                                creatorLinks={creatorLinks}
+                                setCreatorLinks={setCreatorLinks}
+                            />
+                        ))
+                    ) : (
+                        <p className="text-gray-500 text-center">Nenhum link encontrado</p>
+                    )}
+                </div>
+            </div>
+
             {/* Link para o Perfil Público */}
             {profile?.username && (
                 <div className="mt-6 text-center">
