@@ -133,7 +133,7 @@ export async function fetchLinks(userId: string): Promise<Link[]> {
 
         const { data, error } = await supabase
             .from('links')
-            .select('*')
+            .select('id, user_id, title, url, show, order_index, created_at')
             .eq('user_id', userId)
             .order('order_index', { ascending: true });
 
@@ -142,8 +142,8 @@ export async function fetchLinks(userId: string): Promise<Link[]> {
             return [];
         }
 
-        return data || [];
-    } catch (error) {
+        return data || []; // ESTA LINHA DEVE ESTAR AQUI, DENTRO DO TRY
+    } catch (error) { // O catch deve vir logo depois do fechamento do try
         console.error('Error in fetchLinks:', error);
         return [];
     }
