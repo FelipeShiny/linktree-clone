@@ -55,53 +55,53 @@ export async function getProfileByUserId(userId: string): Promise<Profile | null
 }
 
 export const updateProfile = async (userId: string, updates: Partial<Profile>): Promise<boolean> => {
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', userId)
-      .select()
-      .single();
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', userId)
+            .select()
+            .single();
 
-    if (error) {
-      console.error('Error updating profile:', error);
-      return false;
+        if (error) {
+            console.error('Error updating profile:', error);
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error in updateProfile:', error);
+        return false;
     }
-
-    return true;
-  } catch (error) {
-    console.error('Error in updateProfile:', error);
-    return false;
-  }
 };
 
 export const uploadProfilePicture = async (userId: string, file: File): Promise<string | null> => {
-  try {
-    // Upload da imagem para o Supabase Storage
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}_avatar.${fileExt}`;
+    try {
+        // Upload da imagem para o Supabase Storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}_avatar.${fileExt}`;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, file, {
-        upsert: true
-      });
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, file, {
+                upsert: true
+            });
 
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      return null;
+        if (uploadError) {
+            console.error('Upload error:', uploadError);
+            return null;
+        }
+
+        // Obter a URL pública da imagem
+        const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+
+        return publicUrl;
+    } catch (error) {
+        console.error('Erro no upload da foto de perfil:', error);
+        return null;
     }
-
-    // Obter a URL pública da imagem
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
-
-    return publicUrl;
-  } catch (error) {
-    console.error('Erro no upload da foto de perfil:', error);
-    return null;
-  }
 };
 
 export async function fetchCreatorId(username: string): Promise<string | null> {
@@ -124,6 +124,7 @@ export async function fetchCreatorId(username: string): Promise<string | null> {
     }
 }
 
+// CORRIGIDO: Estrutura do try...catch na função fetchLinks
 export async function fetchLinks(userId: string): Promise<Link[]> {
     try {
         if (!userId) {
@@ -142,8 +143,8 @@ export async function fetchLinks(userId: string): Promise<Link[]> {
             return [];
         }
 
-        return data || []; // ESTA LINHA DEVE ESTAR AQUI, DENTRO DO TRY
-    } catch (error) { // O catch deve vir logo depois do fechamento do try
+        return data || []; // Retorno dentro do try
+    } catch (error) { // Catch alinhado com o try
         console.error('Error in fetchLinks:', error);
         return [];
     }
@@ -195,7 +196,7 @@ export function getProfilePictureUrl(avatarUrl?: string | null): string {
     if (supabaseUrl) {
         return `${supabaseUrl}/storage/v1/object/public/avatars/${avatarUrl}`;
     }
-    
+
     // Fallback para imagem padrão se não conseguir construir URL
     return '/assets/default-profile-picture.jpg';
 }
