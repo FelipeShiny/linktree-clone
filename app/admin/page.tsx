@@ -65,11 +65,24 @@ const AdminPage = observer(() => {
     }, [router]);
 
     useEffect(() => {
-        if (profile?.id) {
-            fetchLinks(profile.id, setCreatorLinks, setIsLinkLoading);
-        }
-    }, [profile?.id, setCreatorLinks, setIsLinkLoading]);
+        const loadLinks = async () => { // <--- ADICIONADO: Nova função async
+            if (profile?.id) {
+                setIsLinkLoading(true); // <--- Adicionado: Setar loading antes da busca
+                try {
+                    const links = await fetchLinks(profile.id); // <--- AGORA APENAS profile.id
+                    setCreatorLinks(links); // <--- Setar os links recebidos
+                } catch (error) {
+                    console.error("Erro ao carregar links:", error); // <--- Melhorar log de erro
+                    setCreatorLinks([]); // <--- Limpar links em caso de erro
+                } finally {
+                    setIsLinkLoading(false); // <--- Setar loading para falso
+                }
+            }
+        };
 
+        loadLinks(); // <--- Chamar a nova função async
+
+    }, [profile?.id]); // <--- DEPENDÊNCIAS MODIFICADAS: apenas profile.id é necessário
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
