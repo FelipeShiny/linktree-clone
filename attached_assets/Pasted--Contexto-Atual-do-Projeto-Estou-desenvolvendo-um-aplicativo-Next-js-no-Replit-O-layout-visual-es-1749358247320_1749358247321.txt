@@ -1,0 +1,36 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js no Replit.
+O layout visual está quase 100% pronto.
+O upload da foto de perfil para o Supabase Storage está funcionando, mas a imagem NÃO APARECE na UI.
+O domínio do meu Supabase real é "https://vxquljeazujpsufkckhp.supabase.co".
+
+# Problemas Atuais Críticos a Resolver (Prioridade Máxima da IA):
+
+1.  **`Error: useState is not defined`**
+    * Local: `app/components/EnterUrl.tsx`
+    * Causa: A função `useState` não está sendo importada do React no arquivo.
+
+2.  **`TypeError: Type 'Link[]' is not assignable to parameter of type 'SetStateAction<Link[]>'... Property 'show' is missing...`**
+    * Local: `app/admin/page.tsx` (na chamada `setCreatorLinks(links)`).
+    * Causa: Inconsistência de tipos entre `Link` em `app/utils/profile.ts` (que `fetchLinks` retorna) e `app/types/linkTypes.ts` (que `setCreatorLinks` espera), especificamente a propriedade `show`.
+
+3.  **Problema PERSISTENTE: Exibição da Foto de Perfil na UI:**
+    * **Sintoma:** A imagem de perfil NÃO APARECE na UI do aplicativo.
+    * **Erro em console:** `406 (Not Acceptable)` ou `400 (Bad Request)` para a requisição da imagem.
+    * **Domínio Incorreto no Erro:** A URL que dá erro ainda pode mostrar domínios de proxy do Replit (ex: `https://3e9d5788-...picard.replit.dev`).
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Prioridade Absoluta:** Corrigir o `Error: useState is not defined` em `app/components/EnterUrl.tsx`.
+2.  **Resolver o `TypeError` relacionado à propriedade `show` dos links:**
+    * Garanta que a função `fetchLinks` em `app/utils/profile.ts` e o tipo `Link` em `app/types/linkTypes.ts` sejam perfeitamente compatíveis, incluindo a propriedade `show`.
+3.  **Resolver a exibição da Foto de Perfil:**
+    * Diagnostique e implemente a solução definitiva para que a imagem seja exibida corretamente na UI, contornando o problema do `406/400 Not Acceptable` e do domínio de proxy do Replit.
+    * Use a tag `<img>` HTML padrão se o componente `<Image>` do Next.js continuar a ser um problema.
+
+4.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- O site deve funcionar perfeitamente no ambiente Replit.
+- Manter o layout visual existente.
+- Garanta que todas as URLs usem variáveis de ambiente (Secrets) para o domínio Supabase.

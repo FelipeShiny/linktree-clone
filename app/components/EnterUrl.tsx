@@ -1,17 +1,28 @@
 'use client';
 
-import React, { useState } from 'react';
-import { addNewLink, getUser } from '../utils/profile';
+import React from 'react'; // Garanta que React esteja importado
+import { addNewLink } from '../utils/profile';
 import { Link } from '../types/linkTypes';
 
-interface EnterUrlProps {
-    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
-}
-
-const EnterUrl: React.FC<EnterUrlProps> = ({ setCreatorLinks }) => {
-    const [title, setTitle] = useState('');
-    const [url, setUrl] = useState('');
-    const [loading, setLoading] = useState(false);
+const EnterUrl = ({
+  newUrl,
+  setNewUrl,
+  newTitle,
+  setNewTitle,
+  creatorLinks,
+  setCreatorLinks,
+  creatorId // <-- Certifique-se que creatorId está sendo passado para EnterUrl se ele for usado em addNewLink
+}: {
+  newUrl: string;
+  setNewUrl: React.Dispatch<React.SetStateAction<string>>;
+  newTitle: string;
+  setNewTitle: React.Dispatch<React.SetStateAction<string>>;
+  creatorLinks: Link[];
+  setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
+  creatorId?: string; // Adicione se necessário
+}) => {
+  // ADICIONE ESTA LINHA:
+  const [adding, setAdding] = useState(false); // <--- Nova variável de estado
     const [message, setMessage] = useState<string>('');
 
     const handleAddLink = async () => {
