@@ -70,8 +70,8 @@ const EnterUrl = ({
                 <label className="block text-sm font-medium mb-1">Título</label>
                 <input
                     type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
                     placeholder="Digite o título do link"
                     className="w-full p-2 border border-gray-300 rounded-lg"
                 />
@@ -81,8 +81,8 @@ const EnterUrl = ({
                 <label className="block text-sm font-medium mb-1">URL</label>
                 <input
                     type="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
+                    value={newUrl}
+                    onChange={(e) => setNewUrl(e.target.value)}
                     placeholder="https://exemplo.com"
                     className="w-full p-2 border border-gray-300 rounded-lg"
                 />

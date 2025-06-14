@@ -1,14 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Adicionado useCallback
 import { observer } from 'mobx-react';
 import { authStore } from '../interfaces/AuthStore';
-import { getUser, getProfileByUserId, updateProfile, Profile } from '../utils/profile';
+import {
+    getUser,
+    getProfileByUserId,
+    updateProfile,
+    Profile, // Importar o tipo Profile
+    fetchLinks, // fetchLinks agora retorna Promise<Link[]>
+    getProfilePictureUrl,
+} from '../utils/profile';
 import ProfilePicture from '../components/ProfilePicture';
 import ChangeProfilePictureDialog from '../components/ChangeProfilePictureDialog';
 import { useRouter } from 'next/navigation';
-import { fetchLinks } from '../utils/profile';
-import { Link } from '../types/linkTypes';
+import { Link } from '../types/linkTypes'; // Importar o tipo Link
 import EnterUrl from '../components/EnterUrl';
 import EditableLinkItem from '../components/EditableLinkItem';
 
@@ -24,12 +30,33 @@ const AdminPage = observer(() => {
         full_name: '',
         bio: ''
     });
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     const [creatorLinks, setCreatorLinks] = useState<Link[]>([]);
     const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
     const [newUrl, setNewUrl] = useState<string>('');
     const [newTitle, setNewTitle] = useState<string>('');
 
+
+    // --- Função para recarregar links (passada para EnterUrl e EditableLinkItem) ---
+    // Usamos useCallback para que esta função não mude a cada render e não cause loops em useEffects
+    const refreshLinks = useCallback(async () => {
+        if (profile?.id) {
+            setIsLinkLoading(true);
+            try {
+                const links = await fetchLinks(profile.id); // fetchLinks deve retornar Link[]
+                setCreatorLinks(links);
+            } catch (error) {
+                console.error("Erro ao recarregar links:", error);
+                setCreatorLinks([]);
+            } finally {
+                setIsLinkLoading(false);
+            }
+        }
+    }, [profile?.id, setCreatorLinks, setIsLinkLoading]); // Dependências da função
+
+    // --- Lógica de Carregamento do Perfil na Inicialização ---
     useEffect(() => {
         const loadProfileData = async () => {
             try {
@@ -55,7 +82,7 @@ const AdminPage = observer(() => {
                 }
             } catch (error) {
                 console.error('Erro ao carregar perfil:', error);
-                setMessage('Erro ao carregar dados do perfil. Verifique sua conexão.');
+                setMessage('Erro ao carregar dados do perfil. Tente novamente.');
             } finally {
                 setLoading(false);
             }
@@ -64,25 +91,13 @@ const AdminPage = observer(() => {
         loadProfileData();
     }, [router]);
 
+    // --- Lógica de Carregamento de Links (depende do profile.id) ---
     useEffect(() => {
-        const loadLinks = async () => { // <--- ADICIONADO: Nova função async
-            if (profile?.id) {
-                setIsLinkLoading(true); // <--- Adicionado: Setar loading antes da busca
-                try {
-                    const links = await fetchLinks(profile.id); // <--- AGORA APENAS profile.id
-                    setCreatorLinks(links); // <--- Setar os links recebidos
-                } catch (error) {
-                    console.error("Erro ao carregar links:", error); // <--- Melhorar log de erro
-                    setCreatorLinks([]); // <--- Limpar links em caso de erro
-                } finally {
-                    setIsLinkLoading(false); // <--- Setar loading para falso
-                }
-            }
-        };
+        // Agora, chamamos refreshLinks aqui para carregar na inicialização do perfil
+        refreshLinks();
+    }, [profile?.id, refreshLinks]); // Dependência de refreshLinks
 
-        loadLinks(); // <--- Chamar a nova função async
 
-    }, [profile?.id]); // <--- DEPENDÊNCIAS MODIFICADAS: apenas profile.id é necessário
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -133,20 +148,6 @@ const AdminPage = observer(() => {
         setTimeout(() => setMessage(''), 3000);
     };
 
-    const refreshLinks = async () => {
-        if (profile?.id) {
-            setIsLinkLoading(true);
-            try {
-                const links = await fetchLinks(profile.id);
-                setCreatorLinks(links);
-            } catch (error) {
-                console.error("Erro ao carregar links:", error);
-                setCreatorLinks([]);
-            } finally {
-                setIsLinkLoading(false);
-            }
-        }
-    };
 
     if (loading) {
         return (
@@ -155,6 +156,15 @@ const AdminPage = observer(() => {
             </div>
         );
     }
+
+    if (!authStore.user) {
+         return (
+             <div className="flex justify-center items-center min-h-screen">
+                 <div className="text-lg">Redirecionando para login...</div>
+             </div>
+         );
+    }
+
 
     return (
         <div className="max-w-2xl mx-auto p-6">
@@ -187,7 +197,7 @@ const AdminPage = observer(() => {
                     <ChangeProfilePictureDialog
                         isOpen={isDialogOpen}
                         onClose={() => setIsDialogOpen(false)}
-                        userId={authStore.user?.id || ''}
+                        userId={authStore.user.id || ''}
                         onImageUpdate={handleProfilePictureUpdate}
                     />
                 </div>
@@ -264,6 +274,15 @@ const AdminPage = observer(() => {
                             {saving ? 'Salvando...' : 'Salvar Perfil'}
                         </button>
                     </div>
+
+                    {/* Mensagem de Feedback */}
+                    {message && (
+                        <div className={`p-3 rounded-md text-sm ${
+                            message.includes('sucesso') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                            {message}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -273,9 +292,15 @@ const AdminPage = observer(() => {
 
                 {/* Adicionar novo link */}
                 <div className="mb-6">
-                    <EnterUrl 
-                        creatorId={authStore.user?.id || ''} 
-                        onLinkAdded={refreshLinks}
+                    <EnterUrl
+                        newUrl={newUrl}
+                        setNewUrl={setNewUrl}
+                        newTitle={newTitle}
+                        setNewTitle={setNewTitle}
+                        creatorLinks={creatorLinks}
+                        setCreatorLinks={setCreatorLinks}
+                        creatorId={profile?.id || ''}
+                        onLinkAdded={refreshLinks} // onLinkAdded é uma prop
                     />
                 </div>
 
