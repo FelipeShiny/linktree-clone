@@ -1,0 +1,26 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+Você (Replit AI) fez refatorações extensivas que resolveram muitos problemas e o layout está quase 100% pronto.
+O **upload da foto de perfil para o Supabase Storage está FUNCIONANDO!** (a imagem é enviada e a URL é salva na tabela 'profiles' no Supabase).
+A URL da imagem copiada diretamente do Supabase Storage (ex: 'https://vxquljeazujpsufkckhp.supabase.co/.../avatar?token=...') **FUNCIONA PERFEITAMENTE** quando colada em uma nova aba do navegador.
+
+# Problema Crítico ATUAL (Prioridade Absoluta da IA): Exibição da Foto de Perfil na UI
+
+1.  **A imagem de perfil NÃO APARECE na UI do aplicativo (nem no perfil privado, nem no público).**
+2.  **Erro em console:** `Image failed to load, using default`
+3.  **Causa Provável:** A URL que o aplicativo está usando para o `src` da tag `<img>` (ou componente `<Image>`) no `ProfilePicture.tsx` ainda está incorreta, ou há um problema persistente com o ambiente Replit/Next.js que impede o carregamento da imagem de domínios externos.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Prioridade Absoluta:** Diagnosticar e implementar a solução definitiva para que a imagem de perfil **APAREÇA VISIVELMENTE** na UI do aplicativo (tanto no perfil privado quanto no público).
+    * Analise **EXAUSTIVAMENTE** a função `getProfilePictureUrl` em `app/utils/profile.ts` e o componente `app/components/ProfilePicture.tsx` (especialmente a prop `src` da tag `<img>` ou `<Image>`).
+    * **Garanta que a URL gerada e usada seja IDÊNTICA** à URL que funciona diretamente no navegador (`https://vxquljeazujpsufkckhp.supabase.co/storage/v1/object/public/avatars/{creatorId}/avatar`).
+    * **Verifique se há quaisquer headers HTTP adicionais ou configurações** que possam estar sendo passadas e causando um `400/404/406` silencioso.
+    * Faça com que a imagem apareça sem o `Image failed to load` ou o uso do fallback padrão.
+
+2.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem o problema,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- O site deve funcionar perfeitamente no ambiente Replit.
+- Mantenha o layout visual existente.
+- Garanta que a URL da imagem use `process.env.NEXT_PUBLIC_SUPABASE_URL`.
