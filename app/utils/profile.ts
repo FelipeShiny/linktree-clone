@@ -192,14 +192,10 @@ export function getProfilePictureUrl(avatarUrl?: string | null): string {
         return avatarUrl;
     }
 
-    // Se é um caminho relativo do Supabase Storage
-    // Use o método correto do Supabase client para obter URL pública
-    const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(avatarUrl);
-
-    if (data?.publicUrl) {
-        return data.publicUrl;
+    // Construir URL manualmente para o Supabase Storage
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (supabaseUrl) {
+        return `${supabaseUrl}/storage/v1/object/public/avatars/${avatarUrl}`;
     }
 
     // Fallback para imagem padrão se não conseguir construir URL

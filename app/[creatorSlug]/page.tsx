@@ -60,7 +60,7 @@ export default function CreatorPage({ params }: PageProps) {
             <div className="w-full max-w-md mx-auto text-center">
                 <div className="mb-6">
                     <ProfilePicture
-                        src={profile.avatar_url}
+                        avatarUrl={profile.avatar_url}
                         alt={`Foto de perfil de ${profile.full_name || profile.username}`}
                         size={120}
                         className="mx-auto mb-4"
