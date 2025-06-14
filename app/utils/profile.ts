@@ -16,6 +16,7 @@ export interface Link {
     user_id: string;
     title: string;
     url: string;
+    show: boolean;
     order_index?: number;
     created_at?: string;
 }
@@ -154,7 +155,7 @@ export async function fetchCreatorData(username: string) {
     try {
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, username, full_name, bio, avatar_url, created_at, updated_at')
             .eq('username', username)
             .single();
 
@@ -165,8 +166,9 @@ export async function fetchCreatorData(username: string) {
 
         const { data: links, error: linksError } = await supabase
             .from('links')
-            .select('*')
+            .select('id, user_id, title, url, show, order_index, created_at')
             .eq('user_id', profile.id)
+            .eq('show', true)
             .order('order_index', { ascending: true });
 
         if (linksError) {
@@ -236,5 +238,48 @@ export async function deleteLink(linkId: string): Promise<boolean> {
     } catch (error) {
         console.error('Error in deleteLink:', error);
         return false;
+    }
+}
+
+export async function addNewLink(userId: string, title: string, url: string): Promise<Link | null> {
+    try {
+        // Get the current highest order_index for this user
+        const { data: existingLinks, error: fetchError } = await supabase
+            .from('links')
+            .select('order_index')
+            .eq('user_id', userId)
+            .order('order_index', { ascending: false })
+            .limit(1);
+
+        if (fetchError) {
+            console.error('Error fetching existing links:', fetchError);
+            return null;
+        }
+
+        const nextOrderIndex = existingLinks && existingLinks.length > 0 
+            ? (existingLinks[0].order_index || 0) + 1 
+            : 0;
+
+        const { data, error } = await supabase
+            .from('links')
+            .insert({
+                user_id: userId,
+                title: title,
+                url: url,
+                show: true,
+                order_index: nextOrderIndex
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error adding new link:', error);
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error in addNewLink:', error);
+        return null;
     }
 }

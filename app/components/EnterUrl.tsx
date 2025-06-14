@@ -1,32 +1,36 @@
+
 'use client';
 
-import React, { useState } from 'react'; // Garanta que React esteja importado
-import { addNewLink } from '../utils/profile';
+import React, { useState } from 'react';
+import { addNewLink, getUser } from '../utils/profile';
 import { Link } from '../types/linkTypes';
 
-const EnterUrl = ({
-  newUrl,
-  setNewUrl,
-  newTitle,
-  setNewTitle,
-  creatorLinks,
-  setCreatorLinks,
-  creatorId // <-- Certifique-se que creatorId está sendo passado para EnterUrl se ele for usado em addNewLink
-}: {
-  newUrl: string;
-  setNewUrl: React.Dispatch<React.SetStateAction<string>>;
-  newTitle: string;
-  setNewTitle: React.Dispatch<React.SetStateAction<string>>;
-  creatorLinks: Link[];
-  setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
-  creatorId?: string; // Adicione se necessário
+interface EnterUrlProps {
+    newUrl: string;
+    setNewUrl: React.Dispatch<React.SetStateAction<string>>;
+    newTitle: string;
+    setNewTitle: React.Dispatch<React.SetStateAction<string>>;
+    creatorLinks: Link[];
+    setCreatorLinks: React.Dispatch<React.SetStateAction<Link[]>>;
+    creatorId: string;
+    onLinkAdded?: () => void;
+}
+
+const EnterUrl: React.FC<EnterUrlProps> = ({
+    newUrl,
+    setNewUrl,
+    newTitle,
+    setNewTitle,
+    creatorLinks,
+    setCreatorLinks,
+    creatorId,
+    onLinkAdded
 }) => {
-  // ADICIONE ESTA LINHA:
-  const [adding, setAdding] = useState(false); // <--- Nova variável de estado
+    const [adding, setAdding] = useState(false);
     const [message, setMessage] = useState<string>('');
 
     const handleAddLink = async () => {
-        if (!title.trim() || !url.trim()) {
+        if (!newTitle.trim() || !newUrl.trim()) {
             setMessage('Preencha título e URL.');
             return;
         }
@@ -41,13 +45,18 @@ const EnterUrl = ({
                 return;
             }
 
-            const newLink = await addNewLink(user.id, title.trim(), url.trim());
+            const newLink = await addNewLink(user.id, newTitle.trim(), newUrl.trim());
 
             if (newLink) {
                 setCreatorLinks(prev => [...prev, newLink]);
-                setTitle('');
-                setUrl('');
+                setNewTitle('');
+                setNewUrl('');
                 setMessage('Link adicionado com sucesso!');
+
+                // Call the callback if provided
+                if (onLinkAdded) {
+                    onLinkAdded();
+                }
 
                 // Clear message after 3 seconds
                 setTimeout(() => setMessage(''), 3000);

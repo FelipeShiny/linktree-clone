@@ -17,23 +17,32 @@ export default function ProfilePicture({ userId, className = '', alt = 'Profile 
     useEffect(() => {
         const loadProfilePicture = async () => {
             try {
-                // Get the profile picture filename from the users table
+                // Get the profile picture filename from the profiles table
                 const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('profile_picture')
+                    .from('profiles')
+                    .select('avatar_url')
                     .eq('id', userId)
                     .single();
 
-                if (userError || !userData?.profile_picture) {
+                if (userError || !userData?.avatar_url) {
                     setImageUrl('/assets/default-profile-picture.jpg');
                     setLoading(false);
                     return;
                 }
 
-                // Get the public URL for the image
-                const { data } = supabase.storage
-                    .from('profile-pictures')
-                    .getPublicUrl(userData.profile_picture);
+                // If it's already a full URL, use it directly
+                if (userData.avatar_url.startsWith('http')) {
+                    setImageUrl(userData.avatar_url);
+                } else {
+                    // Get the public URL for the image from storage
+                    const { data } = supabase.storage
+                        .from('avatars')
+                        .getPublicUrl(userData.avatar_url);
+
+                    if (data?.publicUrl) {
+                        setImageUrl(data.publicUrl);
+                    }
+                }
 
                 if (data?.publicUrl) {
                     setImageUrl(data.publicUrl);
