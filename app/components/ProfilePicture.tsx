@@ -25,27 +25,27 @@ export default function ProfilePicture({ userId, className = '', alt = 'Profile 
                     .single();
 
                 if (userError || !userData?.avatar_url) {
+                    console.log('No avatar_url found, using default');
                     setImageUrl('/assets/default-profile-picture.jpg');
                     setLoading(false);
                     return;
                 }
 
-                // If it's already a full URL, use it directly
+                // If it's already a full URL (from Storage), use it directly
                 if (userData.avatar_url.startsWith('http')) {
                     setImageUrl(userData.avatar_url);
                 } else {
                     // Get the public URL for the image from storage
-                    const { data } = supabase.storage
+                    const { data: storageData } = supabase.storage
                         .from('avatars')
                         .getPublicUrl(userData.avatar_url);
 
-                    if (data?.publicUrl) {
-                        setImageUrl(data.publicUrl);
+                    if (storageData?.publicUrl) {
+                        setImageUrl(storageData.publicUrl);
+                    } else {
+                        console.log('Failed to get public URL, using default');
+                        setImageUrl('/assets/default-profile-picture.jpg');
                     }
-                }
-
-                if (data?.publicUrl) {
-                    setImageUrl(data.publicUrl);
                 }
             } catch (error) {
                 console.error('Error loading profile picture:', error);
@@ -57,6 +57,8 @@ export default function ProfilePicture({ userId, className = '', alt = 'Profile 
 
         if (userId) {
             loadProfilePicture();
+        } else {
+            setLoading(false);
         }
     }, [userId]);
 
@@ -73,7 +75,10 @@ export default function ProfilePicture({ userId, className = '', alt = 'Profile 
             src={imageUrl}
             alt={alt}
             className={`rounded-full object-cover ${className}`}
-            onError={() => setImageUrl('/assets/default-profile-picture.jpg')}
+            onError={() => {
+                console.log('Image failed to load, using default');
+                setImageUrl('/assets/default-profile-picture.jpg');
+            }}
         />
     );
 }

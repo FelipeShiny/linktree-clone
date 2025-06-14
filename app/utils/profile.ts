@@ -8,7 +8,6 @@ export interface Profile {
     bio?: string;
     avatar_url?: string;
     created_at?: string;
-    updated_at?: string;
 }
 
 export interface Link {
@@ -155,7 +154,7 @@ export async function fetchCreatorData(username: string) {
     try {
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('id, username, full_name, bio, avatar_url, created_at, updated_at')
+            .select('id, username, full_name, bio, avatar_url, created_at')
             .eq('username', username)
             .single();
 
@@ -194,9 +193,13 @@ export function getProfilePictureUrl(avatarUrl?: string | null): string {
     }
 
     // Se é um caminho relativo do Supabase Storage
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (supabaseUrl) {
-        return `${supabaseUrl}/storage/v1/object/public/avatars/${avatarUrl}`;
+    // Use o método correto do Supabase client para obter URL pública
+    const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(avatarUrl);
+
+    if (data?.publicUrl) {
+        return data.publicUrl;
     }
 
     // Fallback para imagem padrão se não conseguir construir URL
