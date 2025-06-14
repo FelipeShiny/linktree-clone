@@ -1,0 +1,40 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js no Replit.
+Você (Replit AI) fez refatorações extensivas.
+O layout visual do site está quase 100% pronto.
+
+# Problemas Atuais Críticos a Resolver (Prioridade Máxima da IA):
+
+1.  **`Attempted import error: 'addNewLink' is not exported from '../utils/profile'`**
+    * **Local:** `app/components/EnterUrl.tsx` (e onde mais for importado).
+    * **Causa:** A função `addNewLink` em `app/utils/profile.ts` não está sendo exportada corretamente ou foi renomeada/removida/refatorada de forma que não é mais acessível.
+
+2.  **Erro `404 (Not Found)` ao carregar dados do perfil público:**
+    * **Erro em console:** `GET https://vxquljeazujpsufkckhp.supabase.co/rest/v1/users?select=pro... 404 (Not Found)`
+    * **Causa:** A requisição para buscar dados do perfil público está indo para a API REST (`/rest/v1/users`) com o nome de tabela `users`, que não existe ou não está configurada para acesso público. **Deveria ser para a tabela `profiles`** (`/rest/v1/profiles`).
+    * **Impacto:** O perfil público não carrega dados, e a foto de perfil não aparece.
+
+3.  **Foto de Perfil ainda não aparece na UI (persistente):**
+    * A IA deve garantir que a imagem de perfil **APAREÇA VISIVELMENTE** na UI após a correção dos erros acima. Isso pode envolver o uso correto da URL de Storage e da tag `<img>`.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Corrigir o `Attempted import error: 'addNewLink' is not exported'`.**
+    * Analise `app/utils/profile.ts` e `app/components/EnterUrl.tsx`.
+    * Garanta que `addNewLink` seja exportada corretamente e importada onde é usada.
+
+2.  **Resolver o erro `404 (Not Found)` para `rest/v1/users`:**
+    * Investigue a função `fetchCreatorData` (ou similar) que busca dados do perfil público em `app/utils/profile.ts` e `app/[creatorSlug]/page.tsx`.
+    * **Altere a requisição para usar a tabela `profiles`** (ex: `supabase.from('profiles')`) em vez de `users`.
+    * Garanta que a requisição seja feita para a **API de Storage (`/storage/v1/object/public/...`)** para a URL da imagem, não para a API REST (`/rest/v1/`).
+
+3.  **Após a correção desses erros, garanta que a foto de perfil apareça visivelmente na UI** do perfil público e privado.
+
+4.  **Mantenha o LAYOUT VISUAL EXISTENTE do site.**
+
+5.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- O site deve funcionar perfeitamente no ambiente Replit.
+- Manter o layout visual existente.
+- Garanta que todas as URLs usem variáveis de ambiente (Secrets) para o domínio Supabase.
