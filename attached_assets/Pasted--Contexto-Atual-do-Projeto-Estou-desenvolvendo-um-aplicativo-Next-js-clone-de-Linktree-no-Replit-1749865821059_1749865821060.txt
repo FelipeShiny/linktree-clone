@@ -1,0 +1,37 @@
+# Contexto Atual do Projeto:
+Estou desenvolvendo um aplicativo Next.js (clone de Linktree) no Replit.
+Você (Replit AI) fez refatorações extensivas que introduziram novos erros críticos.
+O upload da foto de perfil para o Supabase Storage está funcionando.
+A URL da imagem copiada diretamente do Supabase Storage FUNCIONA PERFEITAMENTE no navegador.
+
+# Problemas Atuais Críticos a Resolver (Prioridade Máxima da IA):
+
+1.  **`Error fetching profile: column profiles.updated_at does not exist`**
+    * **Local:** `profile.ts:163` (na função `fetchCreatorData` ou similar).
+    * **Causa:** A consulta para a tabela `profiles` está tentando selecionar a coluna `updated_at`, mas ela não existe na tabela `profiles` do Supabase.
+
+2.  **`ReferenceError: data is not defined`**
+    * **Local:** `ProfilePicture.tsx:51` (dentro do `useEffect` ou lógica de carregamento da imagem).
+    * **Causa:** A variável `data` está sendo usada antes de ser definida, provavelmente porque `supabase.storage.from().getPublicUrl()` falhou ou retornou `null`.
+
+3.  **Imagem NÃO Aparece (Erro `400/404/406` para a URL da imagem):**
+    * **Sintoma:** A imagem de perfil NÃO APARECE na UI.
+    * **Erro em console:** `GET https://vxquljeazujpsufkckhp.supabase.co/rest/v1/users?select=pro... 404 (Not Found)` ou `406 (Not Acceptable)`.
+    * **Causa:** A URL da imagem está apontando para a **API REST (`/rest/v1/users`)** em vez da **API de Storage (`/storage/v1/object/public/avatars/...`)**. O caminho `users` também é incorreto, deve ser `profiles`.
+
+# Minha Tarefa para Você (Replit AI):
+
+1.  **Prioridade Absoluta:** Corrigir os erros `column profiles.updated_at does not exist` e `ReferenceError: data is not defined`.
+    * No `profile.ts`, ajuste a função que busca o perfil (`fetchCreatorData` ou `getProfileByUserId`) para **não selecionar a coluna `updated_at`** ou **corrija a query/interface** se `updated_at` realmente deveria existir.
+    * No `ProfilePicture.tsx`, garanta que a variável `data` seja definida corretamente antes de ser usada, e que o tratamento de erro esteja adequado para `getPublicUrl`.
+
+2.  **Resolver o problema da imagem de perfil que não aparece:**
+    * Garanta que a URL da imagem **SEMPRE aponte para a API de Storage correta** (`/storage/v1/object/public/avatars/`) e **NÃO para a API REST (`/rest/v1/`) ou `users`**.
+    * A imagem **DEVE APARECER VISIVELMENTE** na UI.
+
+3.  **Após as implementações, explique todas as mudanças feitas e por que elas resolvem os problemas,** incluindo instruções claras sobre como testar e quaisquer passos adicionais de limpeza/reinício que possam ser necessários.
+
+# Restrições e Preferências:
+- Foque APENAS em resolver estes erros críticos.
+- Mantenha o layout visual existente.
+- Garanta que todas as URLs (especialmente da imagem de perfil) usem variáveis de ambiente (Secrets) para o domínio Supabase e apontem para o STORAGE correto.
